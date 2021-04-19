@@ -8,9 +8,26 @@ dashboardPage(
     
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
                                   tags$img(src = "http://www.parlgov.org/static/images/parlgov-logo.svg"))),
-    dashboardSidebar(),
-    dashboardBody(
+    dashboardSidebar(
         
+        sidebarMenu(
+
+            menuItem("Parties", tabName = "party_section", icon = icon("users")),
+            menuItem("Elections", tabName = "elec_section", icon = icon("person-booth")),
+            menuItem("Cabinets", tabName = "cab_section", icon = icon("landmark")),
+            
+            hr()
+            
+        )
+    ),
+    
+    dashboardBody(
+    
+        
+        
+        
+        
+        # Color properties
         tags$head(tags$style(HTML('
                                 /* logo */
                                 .skin-blue .main-header .logo {
@@ -29,23 +46,23 @@ dashboardPage(
 
                                 /* main sidebar */
                                 .skin-blue .main-sidebar {
-                                background-color: #2076B6;
+                                background-color: #474749;
                                 }
 
                                 /* active selected tab in the sidebarmenu */
                                 .skin-blue .main-sidebar .sidebar .sidebar-menu .active a{
-                                background-color: #FFFFFF;
+                                background-color: #474749;
                                 }
 
                                 /* other links in the sidebarmenu */
                                 .skin-blue .main-sidebar .sidebar .sidebar-menu a{
-                                background-color: #F5F5F5;
-                                color: #000000;
+                                background-color: #474749;
+                                color: #FFFFFF;
                                 }
 
                                 /* other links in the sidebarmenu when hovered */
                                 .skin-blue .main-sidebar .sidebar .sidebar-menu a:hover{
-                                background-color: #474749;
+                                background-color: #2076B6;
                                 }
                                 
                                 /* toggle button when hovered  */

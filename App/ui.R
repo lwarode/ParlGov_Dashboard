@@ -16,14 +16,43 @@ dashboardPage(
             menuItem("Elections", tabName = "elec_section", icon = icon("person-booth")),
             menuItem("Cabinets", tabName = "cab_section", icon = icon("landmark")),
             
-            hr()
+            hr(),
+            
+            # Manual search engine
+            selectInput("country_search", "Search", choices = country_list, multiple = TRUE)
+            
+            
             
         )
     ),
     
     dashboardBody(
     
-        
+        tabItems(
+            
+            # Parties
+            tabItem(
+                tabName = "party_section",
+                h2("Parties")
+                
+                ),
+            
+            # Elections
+            tabItem(
+                tabName = "elec_section",
+                h2("Elections")
+                
+            ),
+            
+            # Cabinets
+            tabItem(
+                tabName = "cab_section",
+                h2("Cabinets")
+                
+            )
+            
+            
+        ),
         
         
         

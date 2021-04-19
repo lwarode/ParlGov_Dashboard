@@ -11,6 +11,12 @@ party_main <- read_csv(paste0(pg_url, "view_party.csv"))
 elec_main <- read_csv(paste0(pg_url, "view_election.csv"))
 cab_main <- read_csv(paste0(pg_url, "view_cabinet.csv"))
 
+country_list <- elec_main %>% 
+  distinct(country_name, country_name_short) %>% 
+  arrange(country_name) %>% 
+  mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+  pull()
+
 # pg_data <- c("view_party.csv", 
 #              "view_election.csv",
 #              "view_cabinet.csv")

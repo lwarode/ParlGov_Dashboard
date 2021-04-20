@@ -42,7 +42,7 @@ theme_pg <- function() {
       
       axis.text.x = element_text(   
         family = font, 
-        angle = 45,
+        # angle = 45,
         size = 8), 
       
       axis.text.y = element_text(   

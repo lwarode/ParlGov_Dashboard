@@ -19,7 +19,10 @@ dashboardPage(
             hr(),
             
             # Manual search engine
-            selectInput("country_search", "Search", choices = country_list, multiple = TRUE)
+            selectInput("country_search", "Search Countries", choices = country_list, multiple = TRUE),
+            
+            # Manual party selection
+            selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE)
             
             
             
@@ -33,7 +36,10 @@ dashboardPage(
             # Parties
             tabItem(
                 tabName = "party_section",
-                h2("Parties")
+                h2("Parties"),
+                
+                # Debug
+                verbatimTextOutput("debug_pl")
                 
                 ),
             

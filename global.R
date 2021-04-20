@@ -38,7 +38,29 @@ if (! "pg_logo.svg" %in% list.files()) {
 
 
 
+
+
 # data section ------------------------------------------------------------
 
+pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
 
+party_main <- read_csv(paste0(pg_url, "view_party.csv"))
+elec_main <- read_csv(paste0(pg_url, "view_election.csv"))
+cab_main <- read_csv(paste0(pg_url, "view_cabinet.csv"))
 
+country_list <- elec_main %>% 
+  distinct(country_name, country_name_short) %>% 
+  mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+  arrange(country_both) %>% 
+  add_row(country_both = "All", .before = 1) %>% 
+  pull(country_both)
+
+party_list <- party_main %>% 
+  mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
+  arrange(party_both) %>% 
+  mutate(party_both = str_remove(party_both, "\"")) %>% 
+  pull(party_both)
+
+# cab_raw <- read_csv(paste0(pg_url, "view_cabinet.csv"))
+# elec_raw <- read_csv(paste0(pg_url, "view_election.csv"))
+# party_raw <- read_csv(paste0(pg_url, "view_party.csv"))

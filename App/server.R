@@ -47,8 +47,6 @@ function(input, output, session) {
     
   })
   
-  output$debug_pl <- renderPrint(party_list_reactive())
-  
   observe({
 
     if (!is.null(input$country_search) && input$country_search != "All") {

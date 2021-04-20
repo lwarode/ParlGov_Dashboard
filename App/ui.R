@@ -36,10 +36,7 @@ dashboardPage(
             # Parties
             tabItem(
                 tabName = "party_section",
-                h2("Parties"),
-                
-                # Debug
-                verbatimTextOutput("debug_pl")
+                h2("Parties")
                 
                 ),
             

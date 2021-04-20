@@ -29,10 +29,13 @@ function(input, output, session) {
     
     if (input$country_search == "All") {
       
-      party_main %>% 
-        mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
-        arrange(party_both) %>% 
-        pull(party_both)
+      # party_main %>% 
+      #   mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
+      #   arrange(party_both) %>% 
+      #   mutate(party_both = str_remove(party_both, "\"")) %>%
+      #   pull(party_both)
+      
+      party_list
 
     } else {
       
@@ -47,17 +50,17 @@ function(input, output, session) {
     
   })
   
-  observe({
+  observeEvent(input$country_search, {
 
-    if (!is.null(input$country_search) && input$country_search != "All") {
+    # if (!is.null(input$country_search) && input$country_search != "All") {
 
       updateSelectInput(session, 
                         "party_search", 
                         choices = party_list_reactive(),
                         selected = input$party_search)
 
-    }
-
+    # }
+    
   })
 
     

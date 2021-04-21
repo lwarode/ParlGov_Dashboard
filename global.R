@@ -66,6 +66,16 @@ party_list <- party_main %>%
   mutate(party_both = str_remove(party_both, "\"")) %>% 
   pull(party_both)
 
+party_y_value <- c("state_market", 
+                   "liberty_authority", 
+                   "eu_anti_pro")
+
+names(party_y_value) <- c("State/Market (Regulation of the Economy)", 
+                          "Libertarian/Authoritarian",
+                          "Position towards EU Integration")
+
+
+
 # cab_raw <- read_csv(paste0(pg_url, "view_cabinet.csv"))
 # elec_raw <- read_csv(paste0(pg_url, "view_election.csv"))
 # party_raw <- read_csv(paste0(pg_url, "view_party.csv"))

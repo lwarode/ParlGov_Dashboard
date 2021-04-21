@@ -54,7 +54,7 @@ dashboardPage(
                             column(width = 6,
                                    selectInput("y_axis_id", 
                                                "Select Y-Axis Score", 
-                                               choices = c("State/Market", "EU Integration")
+                                               choices = party_y_value
                                    )
                             )
                         ),

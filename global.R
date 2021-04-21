@@ -44,9 +44,9 @@ if (! "pg_logo.svg" %in% list.files()) {
 
 pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
 
-party_main <- read_csv(paste0(pg_url, "view_party.csv"))
-elec_main <- read_csv(paste0(pg_url, "view_election.csv"))
-cab_main <- read_csv(paste0(pg_url, "view_cabinet.csv"))
+party_main <- read_csv(paste0(pg_url, "view_party.csv"), locale = locale(encoding = "Latin1"))
+elec_main <- read_csv(paste0(pg_url, "view_election.csv"), locale = locale(encoding = "Latin1"))
+cab_main <- read_csv(paste0(pg_url, "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
 
 country_list <- elec_main %>% 
   distinct(country_name, country_name_short) %>% 
@@ -56,7 +56,12 @@ country_list <- elec_main %>%
   pull(country_both)
 
 party_list <- party_main %>% 
-  mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
+  mutate(party_both = paste0(party_name_english, 
+                             " | ",
+                             party_name,
+                             " (", 
+                             party_name_short, 
+                             ")")) %>% 
   arrange(party_both) %>% 
   mutate(party_both = str_remove(party_both, "\"")) %>% 
   pull(party_both)

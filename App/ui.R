@@ -19,6 +19,8 @@ dashboardPage(
             
             hr(),
             
+            verbatimTextOutput("debug"), 
+            
             # verbatimTextOutput("party_family"),
             
             # Manual search engine

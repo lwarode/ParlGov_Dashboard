@@ -114,7 +114,7 @@ function(input, output, session) {
   output$party_lr <- renderPlot({
     
     y_axis_var <- input$y_axis_id %>% unname()
-    y_axis_label <- input$y_axis_id %>% names()
+    y_axis_label <- which(party_y_value == input$y_axis_id) %>% names()
     
     ggplot(party_df(), aes_string(x = "left_right", y = y_axis_var)) + 
       geom_point(size = 2.5, alpha = 0.75) + 
@@ -124,7 +124,8 @@ function(input, output, session) {
       geom_vline(xintercept = 5, alpha = 0.5) +
       geom_hline(yintercept = 5, alpha = 0.5) +
       theme_pg() +
-      labs(x = "Left-Right", y = y_axis_label)
+      labs(x = "Left-Right", 
+           y = y_axis_label)
     
   })
 

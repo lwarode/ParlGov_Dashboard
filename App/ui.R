@@ -1,6 +1,7 @@
 library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
+library(shinycssloaders)
 
 source(here::here("global.R"))
 
@@ -17,6 +18,8 @@ dashboardPage(
             menuItem("Cabinets", tabName = "cab_section", icon = icon("landmark")),
             
             hr(),
+            
+            # verbatimTextOutput("party_family"),
             
             # Manual search engine
             selectInput("country_search", "Search Countries", choices = country_list, multiple = TRUE),
@@ -36,7 +39,45 @@ dashboardPage(
             # Parties
             tabItem(
                 tabName = "party_section",
-                h2("Parties")
+                
+                h2("Parties", align = "center"),
+                
+                hr(),
+                
+                fluidRow(
+                    
+                    column(width = 6,
+                        fluidRow(
+                            column(width = 6,
+                                   uiOutput("party_family")
+                            ),
+                            column(width = 6,
+                                   selectInput("y_axis_id", 
+                                               "Select Y-Axis Score", 
+                                               choices = c("State/Market", "EU Integration")
+                                   )
+                            )
+                        ),
+                        plotOutput("party_lr") %>% withSpinner(color = "#2076B6")
+                    ),
+                    
+                    # column(width = 6,
+                    #        uiOutput("vs_max"))
+                    
+                ),
+                
+                hr(),
+                
+                
+                
+                # tableOutput("party_table")
+                
+                fluidRow(
+                    column(
+                           DT::dataTableOutput("party_table"), width = 12
+                    )
+                )
+                
                 
                 ),
             

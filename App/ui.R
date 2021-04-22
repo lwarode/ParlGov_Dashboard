@@ -6,6 +6,19 @@ library(shinyjs)
 
 source(here::here("global.R"))
 
+
+# custom download buttons (varying icons) ---------------------------------
+plotDownloadButton <- function(outputId, label = "Download"){
+    tags$a(id = outputId, class = "btn btn-default shiny-download-link", href = "", 
+           target = "_blank", download = NA, icon("chart-bar"), label)
+}
+
+excelDownloadButton <- function(outputId, label = "Download"){
+    tags$a(id = outputId, class = "btn btn-default shiny-download-link", href = "", 
+           target = "_blank", download = NA, icon("file-excel"), label)
+}
+
+
 dashboardPage(
  
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
@@ -23,8 +36,6 @@ dashboardPage(
             
             hr(),
             
-            verbatimTextOutput("debug"), 
-            
             # verbatimTextOutput("party_family"),
             
             # Manual search engine
@@ -38,7 +49,7 @@ dashboardPage(
             h5("Download Section", align = "center"),
             
             div(style = "text-align: center;", 
-                downloadButton("party_lr_download", label = "Download Party L-R Plot"),
+                plotDownloadButton("party_lr_download", label = "Download Party L-R Plot"),
             )
             
             
@@ -51,8 +62,8 @@ dashboardPage(
     dashboardBody(
     
         tabItems(
-            
-            # Parties
+
+            # Parties -----------------------------------------------------------------
             tabItem(
                 tabName = "party_section",
                 
@@ -60,8 +71,10 @@ dashboardPage(
                 
                 hr(),
                 
+                # Party UI elements
                 fluidRow(
                     
+                    # Left side
                     column(width = 6,
                         fluidRow(
                             column(width = 6,
@@ -73,12 +86,38 @@ dashboardPage(
                                                choices = party_y_value
                                    )
                             )
-                        ),
-                        plotOutput("party_lr_plot") %>% withSpinner(color = "#2076B6")
+                        )
                     ),
                     
-                    # column(width = 6,
-                    #        uiOutput("vs_max"))
+                    # Right side
+                    column(width = 6,
+                           fluidRow(
+                                column(width = 6,
+                                       uiOutput("vs_max")
+                                ),
+                                column(width = 6,
+                                       selectInput("elec_type_vs", 
+                                                   "Select Election Type", 
+                                                   choices = elec_type
+                                       )
+                                )
+                            )
+                    )
+                    
+                ),
+                
+                # Plots
+                fluidRow(
+                    
+                    column(width = 6,
+                           plotOutput("party_lr_plot") %>% 
+                               withSpinner(color = "#2076B6")
+                    ),
+                    
+                    column(width = 6,
+                           plotOutput("party_vs_plot") %>% 
+                               withSpinner(color = "#2076B6")
+                    )
                     
                 ),
                 

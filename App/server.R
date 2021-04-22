@@ -5,6 +5,8 @@ library(tidyverse)
 
 # source(here::here("global.R"))
 source(here::here("theme_pg.R"))
+# source(here::here("party_color.R"))
+
 
 
 # data section ------------------------------------------------------------
@@ -29,13 +31,7 @@ function(input, output, session) {
   party_list_reactive <- reactive({
     
     if (input$country_search == "All") {
-      
-      # party_main %>% 
-      #   mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
-      #   arrange(party_both) %>% 
-      #   mutate(party_both = str_remove(party_both, "\"")) %>%
-      #   pull(party_both)
-      
+    
       party_list
 
     } else {
@@ -64,6 +60,7 @@ function(input, output, session) {
     
   })
   
+  # Party L-R Section -------------------------------------------------------
   party_df <- reactive({
     
     party_main %>% 
@@ -78,21 +75,10 @@ function(input, output, session) {
                                        party_name_short, 
                                        ")")) %>% 
       filter(party_both %in% input$party_search)
-      # distinct(party_both, .keep_all = TRUE) %>% 
-      # select(- party_both)
-      
-  })
-  
-  elec_df <- reactive({
-    
-    elec_main %>% 
-      mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
-      filter(party_both %in% input$party_search) 
-      # distinct(party_both, .keep_all = TRUE) %>% 
-      # select(- party_both)
     
   })
   
+  # Party Family Character
   party_family <- reactive({
     
     party_df() %>% 
@@ -102,12 +88,11 @@ function(input, output, session) {
     
   })
   
-  # output$party_family <- renderPrint(party_family())
-  
+  # UI InfoBox Party Family
   output$party_family <- renderInfoBox({
 
     infoBox(
-      "Party Families", party_family(), icon = icon("flag"), color = "blue", width = 6
+      "Party Families", party_family(), icon = icon("flag"), color = "blue"
     )
 
   })
@@ -135,7 +120,93 @@ function(input, output, session) {
     party_lr()
     
   })
+  
 
+  # Party (Elec) Vote Share Section -----------------------------------------
+  elec_df <- reactive({
+    
+    if (input$elec_type_vs == "all") {
+      
+      elec_main %>% 
+        mutate(party_both = paste0(party_name_english, 
+                                   " | ",
+                                   party_name,
+                                   " (", 
+                                   party_name_short, 
+                                   ")"),
+               party_both_short = paste0(party_name_english, 
+                                         " (", 
+                                         party_name_short, 
+                                         ")")) %>% 
+        filter(party_both %in% input$party_search) %>% 
+        mutate(election_year = lubridate::year(election_date))
+      
+    } else {
+      
+      elec_main %>% 
+        mutate(party_both = paste0(party_name_english, 
+                                   " | ",
+                                   party_name,
+                                   " (", 
+                                   party_name_short, 
+                                   ")"),
+               party_both_short = paste0(party_name_english, 
+                                         " (", 
+                                         party_name_short, 
+                                         ")")) %>% 
+        filter(party_both %in% input$party_search,
+               election_type %in% input$elec_type_vs) %>% 
+        mutate(election_year = lubridate::year(election_date))
+      
+    }
+    
+  })
+  
+  # Max Vote Share Character
+  elec_max_vs <- reactive({
+    
+    elec_df() %>% 
+        group_by(party_id) %>% 
+        mutate(max_vs = max(vote_share)) %>% 
+        distinct(max_vs, party_name_short, .keep_all = TRUE) %>% 
+        ungroup %>% 
+        mutate(max_vs_party = paste0(max_vs, "%", " | ", party_name_short, " (", election_year, ")")) %>% 
+        pull(max_vs_party) %>% 
+        toString()
+    
+  })
+  
+  # UI InfoBox Vote Share
+  output$vs_max <- renderInfoBox({
+    
+    infoBox(
+      "Highest Vote Shares", elec_max_vs(), icon = icon("percent"), color = "blue"
+    )
+    
+  })
+ 
+  party_vs <- reactive({
+    
+    ggplot(elec_df(), aes(x = election_year, y = vote_share, color = party_name_short)) +
+      geom_line() +
+      geom_point() +
+      theme_pg() +
+      theme(legend.title = element_blank())
+    
+  })
+  
+  output$party_vs_plot <- renderPlot({
+    
+    party_vs()
+    
+  })
+
+  
+  
+   
+  
+
+  # Party Table -------------------------------------------------------------
   output$party_table <- DT::renderDataTable({
     
     party_df() %>% 

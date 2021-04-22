@@ -49,6 +49,8 @@ theme_pg <- function() {
         family = font, 
         size = 8),  
       
+      legend.position = "top"
+      
     )
   
 }

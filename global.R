@@ -69,10 +69,16 @@ party_list <- party_main %>%
 party_y_value <- c("state_market", 
                    "liberty_authority", 
                    "eu_anti_pro")
-
-names(party_y_value) <- c("State/Market (Regulation of the Economy)", 
+names(party_y_value) <- c("State/Market (Economy Regulation)", 
                           "Libertarian/Authoritarian",
                           "Position towards EU Integration")
+
+elec_type <- c("all",
+               "parliament",
+               "ep")
+names(elec_type) <- c("All Elections",
+                      "Parliamentary Elections",
+                      "EP Elections")
 
 
 

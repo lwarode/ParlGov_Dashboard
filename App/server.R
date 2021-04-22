@@ -1,5 +1,6 @@
 library(shiny)
 library(shinydashboard)
+library(shinyjs)
 library(tidyverse)
 
 # source(here::here("global.R"))
@@ -111,7 +112,7 @@ function(input, output, session) {
 
   })
   
-  output$party_lr <- renderPlot({
+  party_lr <- reactive({
     
     y_axis_var <- input$y_axis_id %>% unname()
     y_axis_label <- which(party_y_value == input$y_axis_id) %>% names()
@@ -128,6 +129,12 @@ function(input, output, session) {
            y = y_axis_label)
     
   })
+  
+  output$party_lr_plot <- renderPlot({
+    
+    party_lr()
+    
+  })
 
   output$party_table <- DT::renderDataTable({
     
@@ -139,5 +146,34 @@ function(input, output, session) {
                                    # columnDefs = list(list(width = "100px", targets = "_all"))))
   
   })
+  
+  output$party_lr_download <- downloadHandler(
+    
+    filename = "plot_party_lr.png",
+    
+    content = function(file) {
+      
+      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
+      
+    }
+    
+  )
+  
+  # enable/disable plot downloads
+  observe({
+    
+    if (is.null(input$party_search)) {
+      
+      disable("party_lr_download")
+      
+    } else {
+      
+      enable("party_lr_download")
+      
+    }
+    
+  })
+  
+  
   
 }

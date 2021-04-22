@@ -2,14 +2,18 @@ library(shiny)
 library(shinydashboard)
 library(shinyWidgets)
 library(shinycssloaders)
+library(shinyjs)
 
 source(here::here("global.R"))
 
 dashboardPage(
-    
+ 
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
                                   tags$img(src = "http://www.parlgov.org/static/images/parlgov-logo.svg"))),
+    
     dashboardSidebar(
+        
+        useShinyjs(),
         
         sidebarMenu(
 
@@ -27,7 +31,17 @@ dashboardPage(
             selectInput("country_search", "Search Countries", choices = country_list, multiple = TRUE),
             
             # Manual party selection
-            selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE)
+            selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE),
+            
+            hr(),
+            
+            h5("Download Section", align = "center"),
+            
+            div(style = "text-align: center;", 
+                downloadButton("party_lr_download", label = "Download Party L-R Plot"),
+            )
+            
+            
             
             
             
@@ -60,7 +74,7 @@ dashboardPage(
                                    )
                             )
                         ),
-                        plotOutput("party_lr") %>% withSpinner(color = "#2076B6")
+                        plotOutput("party_lr_plot") %>% withSpinner(color = "#2076B6")
                     ),
                     
                     # column(width = 6,
@@ -70,10 +84,8 @@ dashboardPage(
                 
                 hr(),
                 
-                
-                
                 # tableOutput("party_table")
-                
+                h4("Browse full Parties data", align = "center"),
                 fluidRow(
                     column(
                            DT::dataTableOutput("party_table"), width = 12
@@ -104,6 +116,10 @@ dashboardPage(
         
         # Color properties
         tags$head(tags$style(HTML('
+        
+                                /* button center alignment */
+                                .btn { vertical-align: middle; width: 84%;}
+                                
                                 /* logo */
                                 .skin-blue .main-header .logo {
                                 background-color: #F5F5F5;

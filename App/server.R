@@ -39,7 +39,14 @@ function(input, output, session) {
       party_main %>% 
         mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
         filter(country_both %in% input$country_search) %>% 
-        mutate(party_both = paste0(party_name_english, " (", party_name_short, ")")) %>% 
+        mutate(party_both = paste0(party_name_english, 
+                                   "/",
+                                   party_name,
+                                   " | ",
+                                   country_name_short,
+                                   " (", 
+                                   party_name_short, 
+                                   ")")) %>% 
         arrange(party_both) %>% 
         pull(party_both)
       
@@ -65,8 +72,10 @@ function(input, output, session) {
     
     party_main %>% 
       mutate(party_both = paste0(party_name_english, 
-                                 " | ",
+                                 "/",
                                  party_name,
+                                 " | ",
+                                 country_name_short,
                                  " (", 
                                  party_name_short, 
                                  ")"),
@@ -90,9 +99,12 @@ function(input, output, session) {
   
   # UI InfoBox Party Family
   output$party_family <- renderInfoBox({
-
+    
     infoBox(
-      "Party Families", party_family(), icon = icon("flag"), color = "blue"
+      "Party Families", 
+      value = tags$p(party_family(), style = "font-size: 75%;"), 
+      icon = icon("flag"), 
+      color = "blue"
     )
 
   })
@@ -121,6 +133,18 @@ function(input, output, session) {
     
   })
   
+  output$party_lr_download <- downloadHandler(
+    
+    filename = "plot_party_lr.png",
+    
+    content = function(file) {
+      
+      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
+      
+    }
+    
+  )
+  
 
   # Party (Elec) Vote Share Section -----------------------------------------
   elec_df <- reactive({
@@ -129,11 +153,13 @@ function(input, output, session) {
       
       elec_main %>% 
         mutate(party_both = paste0(party_name_english, 
-                                   " | ",
-                                   party_name,
-                                   " (", 
-                                   party_name_short, 
-                                   ")"),
+                                           "/",
+                                           party_name,
+                                           " | ",
+                                           country_name_short,
+                                           " (", 
+                                           party_name_short, 
+                                           ")"), 
                party_both_short = paste0(party_name_english, 
                                          " (", 
                                          party_name_short, 
@@ -145,8 +171,10 @@ function(input, output, session) {
       
       elec_main %>% 
         mutate(party_both = paste0(party_name_english, 
-                                   " | ",
+                                   "/",
                                    party_name,
+                                   " | ",
+                                   country_name_short,
                                    " (", 
                                    party_name_short, 
                                    ")"),
@@ -180,18 +208,40 @@ function(input, output, session) {
   output$vs_max <- renderInfoBox({
     
     infoBox(
-      "Highest Vote Shares", elec_max_vs(), icon = icon("percent"), color = "blue"
+      "Highest Vote Shares", 
+      value = tags$p(elec_max_vs(), style = "font-size: 50%;"), 
+      icon = icon("percent"), 
+      color = "blue"
     )
     
   })
  
   party_vs <- reactive({
     
+    color_vec <- elec_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color) %>% 
+      pull(color)
+    
+    names(color_vec) <- elec_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color, party_name_short) %>% 
+      pull(party_name_short)
+    
     ggplot(elec_df(), aes(x = election_year, y = vote_share, color = party_name_short)) +
-      geom_line() +
+      # geom_line() +
+      geom_path() +
       geom_point() +
+      ggrepel::geom_text_repel(aes(label = if_else(election_year == max(election_year), 
+                                                   party_name_short,
+                                                   "")),
+                               show.legend = FALSE) +
       theme_pg() +
-      theme(legend.title = element_blank())
+      theme(legend.position = "none") + 
+      scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+      scale_color_manual(values = color_vec) +
+      labs(x = "Election Year", 
+           y = "Vote Share")
     
   })
   
@@ -200,6 +250,18 @@ function(input, output, session) {
     party_vs()
     
   })
+  
+  output$party_vs_download <- downloadHandler(
+    
+    filename = "plot_party_vs.png",
+    
+    content = function(file) {
+      
+      ggsave(party_vs(), filename = file, device = "png", width = 8, height = 8)
+      
+    }
+    
+  )
 
   
   
@@ -218,17 +280,7 @@ function(input, output, session) {
   
   })
   
-  output$party_lr_download <- downloadHandler(
-    
-    filename = "plot_party_lr.png",
-    
-    content = function(file) {
-      
-      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
-      
-    }
-    
-  )
+  
   
   # enable/disable plot downloads
   observe({
@@ -236,10 +288,12 @@ function(input, output, session) {
     if (is.null(input$party_search)) {
       
       disable("party_lr_download")
+      disable("party_vs_download")
       
     } else {
       
       enable("party_lr_download")
+      enable("party_vs_download")
       
     }
     

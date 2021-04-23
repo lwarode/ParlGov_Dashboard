@@ -57,8 +57,10 @@ country_list <- elec_main %>%
 
 party_list <- party_main %>% 
   mutate(party_both = paste0(party_name_english, 
-                             " | ",
+                             "/",
                              party_name,
+                             " | ",
+                             country_name_short,
                              " (", 
                              party_name_short, 
                              ")")) %>% 

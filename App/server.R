@@ -165,8 +165,19 @@ function(input, output, session) {
                                          party_name_short, 
                                          ")")) %>% 
         filter(party_both %in% input$party_search) %>% 
-        mutate(election_year = lubridate::year(election_date))
-      
+        mutate(election_year = lubridate::year(election_date)) %>% 
+        group_by(party_id) %>% 
+        mutate(max_elec_date = max(election_date)) %>% 
+        ungroup
+        # mutate(
+        #   party_name_short = paste0(party_name_short,
+        #                             " (",
+        #                             ifelse(election_type == "ep",
+        #                                    "EP",
+        #                                    "Parl."),
+        #                             ")")
+        # )
+
     } else {
       
       elec_main %>% 
@@ -228,16 +239,24 @@ function(input, output, session) {
       distinct(party_id, color, party_name_short) %>% 
       pull(party_name_short)
     
-    ggplot(elec_df(), aes(x = election_year, y = vote_share, color = party_name_short)) +
-      # geom_line() +
-      geom_path() +
-      geom_point() +
-      ggrepel::geom_text_repel(aes(label = if_else(election_year == max(election_year), 
+    # Most recent Election date for highlighting in plot
+    # max_elec_date_df <- elec_df() %>% 
+    #   group_by(party_id) %>% 
+    #   summarise(max_elec_date = max(election_date), party_name_short) 
+    
+    ggplot(elec_df(), aes(x = election_date, y = vote_share, color = party_name_short)) +
+      geom_line(size = 1.5, alpha = 0.75) +
+      # geom_path() +
+      geom_point(size = 2.5) +
+      ggrepel::geom_text_repel(aes(label = if_else(election_date == max_elec_date, 
                                                    party_name_short,
                                                    "")),
-                               show.legend = FALSE) +
+                               show.legend = TRUE,
+                               nudge_x = -1,
+                               size = 6) +
       theme_pg() +
       theme(legend.position = "none") + 
+      scale_x_date(date_labels = "%Y") + 
       scale_y_continuous(labels = scales::percent_format(scale = 1)) +
       scale_color_manual(values = color_vec) +
       labs(x = "Election Year", 
@@ -257,7 +276,7 @@ function(input, output, session) {
     
     content = function(file) {
       
-      ggsave(party_vs(), filename = file, device = "png", width = 8, height = 8)
+      ggsave(party_vs(), filename = file, device = "png", width = 10, height = 5)
       
     }
     

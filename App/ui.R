@@ -49,7 +49,13 @@ dashboardPage(
             h5("Download Section", align = "center"),
             
             div(style = "text-align: center;", 
-                plotDownloadButton("party_lr_download", label = "Download Party L-R Plot"),
+                plotDownloadButton("party_lr_download", label = "Party L-R Plot"),
+            ),
+            
+            br(),
+            
+            div(style = "text-align: center;", 
+                plotDownloadButton("party_vs_download", label = "Party Vote Share Plot"),
             )
             
             

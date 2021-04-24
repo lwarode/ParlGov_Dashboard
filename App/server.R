@@ -206,7 +206,7 @@ function(input, output, session) {
     
     elec_df() %>% 
         group_by(party_id) %>% 
-        mutate(max_vs = max(vote_share)) %>% 
+        mutate(max_vs = max(vote_share, na.rm = TRUE)) %>% 
         distinct(max_vs, party_name_short, .keep_all = TRUE) %>% 
         ungroup %>% 
         mutate(max_vs_party = paste0(max_vs, "%", " | ", party_name_short, " (", election_year, ")")) %>% 
@@ -253,7 +253,7 @@ function(input, output, session) {
                                                    "")),
                                show.legend = TRUE,
                                nudge_x = -1,
-                               size = 6) +
+                               size = 4) +
       theme_pg() +
       theme(legend.position = "none") + 
       scale_x_date(date_labels = "%Y") + 

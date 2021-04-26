@@ -40,11 +40,11 @@ if (! "pg_logo.svg" %in% list.files()) {
 # data section ------------------------------------------------------------
 
 # Create "Data subfolder" if not existing
-# if (! dir.exists(here::here("Data"))) {
-#   
-#   dir.create(here::here("Data"))
-#   
-# }
+if (! dir.exists(here::here("Data"))) {
+
+  dir.create(here::here("Data"))
+
+}
 
 # custom date for update requirement
 custom_date <- Sys.time() - 60 * 60 * 24 * 30 # 30 days prior Sys.time()

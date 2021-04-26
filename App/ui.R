@@ -28,11 +28,13 @@ dashboardPage(
         
         useShinyjs(),
         
-        sidebarMenu(id = "sidebarid",
+        sidebarMenu(
+            
+            id = "sidebarid",
 
             menuItem("Parties", tabName = "party_section", icon = icon("users")),
-            menuItem("Elections", tabName = "elec_section", icon = icon("person-booth")),
-            menuItem("Cabinets", tabName = "cab_section", icon = icon("landmark")),
+            menuItem("Elections", tabName = "election_section", icon = icon("person-booth")),
+            menuItem("Cabinets", tabName = "cabinet_section", icon = icon("landmark")),
             
             hr(),
             
@@ -43,7 +45,7 @@ dashboardPage(
             
             # Conditional Party Panel
             conditionalPanel(
-                
+
                 condition = "input.sidebarid == 'party_section'",
                 
                 # Manual party selection
@@ -51,7 +53,10 @@ dashboardPage(
                 
                 hr(),
                 
-                h5("Download Section", align = "center"),
+                # Download Section
+                h4("Download Section", align = "center"),
+                
+                h5("Download Plots", align = "center"),
                 
                 div(style = "text-align: center;", 
                     plotDownloadButton("party_lr_download", label = "Party L-R Plot"),
@@ -61,12 +66,45 @@ dashboardPage(
                 
                 div(style = "text-align: center;", 
                     plotDownloadButton("party_vs_download", label = "Party Vote Share Plot"),
-                )
+                ),
+                
+                br(),
+                
+                h5("Download Datasets", align = "center"),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("party_df_all_download", label = "All Party Data"),
+                ),
+
+                br(),
+
+                div(style = "text-align: center;",
+                    excelDownloadButton("party_df_country_download", label = "Country Party Data"),
+                ),
+
+                br(),
+
+                div(style = "text-align: center;",
+                    excelDownloadButton("party_df_party_download", label = "Selected Party Data"),
+                ),
+                
+                verbatimTextOutput("debug")
+
+            ),
             
+            # Conditional Election Panel
+            conditionalPanel(
+                
+                condition = "input.sidebarid == 'election_section'"
+                
+            ),
             
+            # Conditional Cabinet Panel
+            conditionalPanel(
+                
+                condition = "input.sidebarid == 'cabinet_section'"
+                
             )
-            
-            
             
         )
     ),
@@ -148,15 +186,15 @@ dashboardPage(
             
             # Elections
             tabItem(
-                tabName = "elec_section",
-                h2("Elections")
+                tabName = "election_section",
+                h2("Elections", align = "center")
                 
             ),
             
             # Cabinets
             tabItem(
-                tabName = "cab_section",
-                h2("Cabinets")
+                tabName = "cabinet_section",
+                h2("Cabinets", align = "center")
                 
             )
             

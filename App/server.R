@@ -8,26 +8,10 @@ source(here::here("theme_pg.R"))
 # source(here::here("party_color.R"))
 
 
-
-# data section ------------------------------------------------------------
-
-
-# pg_data <- c("view_party.csv", 
-#              "view_election.csv",
-#              "view_cabinet.csv")
-# 
-# pg_data %>% 
-#   # map(~ paste0(pg_url, .x)) %>% 
-#   purrr::map(function(file_name) { 
-#     assign(x = str_remove(file_name, ".csv") %>% str_remove("view_"), 
-#            value = read_csv(paste0(pg_url, file_name)),
-#            envir = .GlobalEnv)
-#   })
-  
-
 # server ------------------------------------------------------------------
 function(input, output, session) {
   
+  # UI update ---------------------------------------------------------------
   party_list_reactive <- reactive({
     
     if (input$country_search == "All") {
@@ -195,7 +179,10 @@ function(input, output, session) {
                                          ")")) %>% 
         filter(party_both %in% input$party_search,
                election_type %in% input$elec_type_vs) %>% 
-        mutate(election_year = lubridate::year(election_date))
+        mutate(election_year = lubridate::year(election_date)) %>% 
+        group_by(party_id) %>% 
+        mutate(max_elec_date = max(election_date)) %>% 
+        ungroup
       
     }
     
@@ -299,22 +286,134 @@ function(input, output, session) {
   
   })
   
+
+  # Party Downloads ---------------------------------------------------------
+  # All Party Data
+  output$party_df_all_download <- downloadHandler(
+    
+    filename = "party_all_data.xlsx",
+    
+    content = function(file) {
+      
+     xlsx::write.xlsx(party_main, file = file)
+      
+    }
+    
+  )
+  
+  # Data Frame of select Countries
+  party_country_df <- reactive({
+    
+    if (! input$country_search == "All") {
+    
+      party_main %>% 
+        mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+        filter(country_both %in% input$country_search) %>% 
+        select(- country_both)
+      
+    }
+    
+  })
+  
+  # Chracter of selected Countries
+  party_country_chr <- reactive({
+    
+    party_country_df() %>% 
+      pull(country_name_short) %>% 
+      unique() %>% 
+      toString() %>% 
+      stringr::str_replace_all(", ", "_") 
+    
+  })
   
   
-  # enable/disable plot downloads
+  # Country Party Data
+  output$party_df_country_download <- downloadHandler(
+
+    filename = function() {
+      
+      paste0(party_country_chr(), ".xlsx")
+      
+    }, 
+
+    content = function(file) {
+
+      xlsx::write.xlsx(party_country_df(), file = file)
+
+    }
+
+  )
+  
+  # Character of selected Parties
+  party_party_chr <- reactive({
+    
+    party_df() %>% 
+      pull(party_name_short) %>% 
+      toString() %>% 
+      stringr::str_replace_all(", ", "_") 
+    
+  })
+  
+  # (Selected) Party Data
+  output$party_df_party_download <- downloadHandler(
+    
+    filename = function() {
+      
+      paste0(party_party_chr(), ".xlsx")
+      
+    }, 
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(party_df(), file = file)
+      
+    }
+    
+  )
+  
+  
+  
+  # enable/disable downloads
+  ## party_search
   observe({
     
     if (is.null(input$party_search)) {
       
+      # Plots
       disable("party_lr_download")
       disable("party_vs_download")
       
+      # Datasets
+      disable("party_df_party_download")
+      
     } else {
       
+      # Plots
       enable("party_lr_download")
       enable("party_vs_download")
       
+      # Datasets
+      enable("party_df_party_download")
+      
     }
+    
+  })
+  
+  ## country_search
+  observe({
+    
+    if (is.null(input$country_search) || input$country_search == "All") {
+      
+      # Datasets
+      disable("party_df_country_download")
+      
+    } else {
+      
+      # Datasets
+      enable("party_df_country_download")
+      
+    } 
+    
     
   })
   

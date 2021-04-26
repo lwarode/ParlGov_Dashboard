@@ -1,5 +1,6 @@
 library(tidyverse)
 
+
 # ParlGov logo and colors -------------------------------------------------
 if (! "pg_logo.svg" %in% list.files()) {
   
@@ -36,17 +37,46 @@ if (! "pg_logo.svg" %in% list.files()) {
 }
 
 
-
-
-
-
 # data section ------------------------------------------------------------
 
-pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
+# Create "Data subfolder" if not existing
+# if (! dir.exists(here::here("Data"))) {
+#   
+#   dir.create(here::here("Data"))
+#   
+# }
 
-party_main <- read_csv(paste0(pg_url, "view_party.csv"), locale = locale(encoding = "Latin1"))
-elec_main <- read_csv(paste0(pg_url, "view_election.csv"), locale = locale(encoding = "Latin1"))
-cab_main <- read_csv(paste0(pg_url, "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
+# custom date for update requirement
+custom_date <- Sys.time() - 60 * 60 * 24 * 30 # 30 days prior Sys.time()
+
+# date of last change
+last_changed <-
+  fs::dir_info(path = here::here("Data"), regexp = "view") %>%
+  pull(modification_time) %>%
+  min()
+
+# (Re-)load data if csv is older than custom date or is not existent
+if (last_changed < custom_date | is.infinite(last_changed)) {
+
+  # file prefix
+  file_prefix <- "view"
+  
+  # URL of data
+  pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
+  
+  # Download ParlGov main ("view_") data
+  map(c("party", "election", "cabinet"), 
+      ~ download.file(paste0(pg_url, file_prefix, "_", .x, ".csv"), 
+                      here::here("Data", paste0(file_prefix, "_", .x, ".csv")))
+  )
+  
+    
+}
+
+# Add data to environment
+party_main <- read_csv(here::here("Data", "view_party.csv"), locale = locale(encoding = "Latin1"))
+elec_main <- read_csv(here::here("Data", "view_election.csv"), locale = locale(encoding = "Latin1"))
+cab_main <- read_csv(here::here("Data", "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
 
 country_list <- elec_main %>% 
   distinct(country_name, country_name_short) %>% 
@@ -103,8 +133,6 @@ pg_party_color <- pg_party_color_raw %>%
   right_join(party_main) %>% 
   select(color, party_id) %>% 
   mutate(color = if_else(is.na(color), "grey", color))
-
-
 
 
 # cab_raw <- read_csv(paste0(pg_url, "view_cabinet.csv"))

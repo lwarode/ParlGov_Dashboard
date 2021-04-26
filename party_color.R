@@ -39,4 +39,23 @@ if (! "pg_party_color.csv" %in% list.files()) {
   
 }
 
+library(tidyverse)
+pg_party_color_raw <- read.csv("pg_party_color.csv")
+
+pg_party_color <- pg_party_color_raw %>% 
+  rename(party_id = dataset_party_id) %>% 
+  # mutate(color = case_when(
+  #   pg_party_id %in% c(808, 501, 791, …) ~ color_2,
+  #   TRUE ~ color_1
+  # ))
+  mutate(color = case_when(
+    # CDU
+    party_id == 808 ~ color_2,
+    # N-VA
+    party_id == 501 ~ color_2,
+    # DIE LINKE
+    party_id == 791 ~ color_2,
+    TRUE ~ color_1
+  ))
+
 

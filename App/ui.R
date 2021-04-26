@@ -28,7 +28,7 @@ dashboardPage(
         
         useShinyjs(),
         
-        sidebarMenu(
+        sidebarMenu(id = "sidebarid",
 
             menuItem("Parties", tabName = "party_section", icon = icon("users")),
             menuItem("Elections", tabName = "elec_section", icon = icon("person-booth")),
@@ -41,24 +41,30 @@ dashboardPage(
             # Manual search engine
             selectInput("country_search", "Search Countries", choices = country_list, multiple = TRUE),
             
-            # Manual party selection
-            selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE),
+            # Conditional Party Panel
+            conditionalPanel(
+                
+                condition = "input.sidebarid == 'party_section'",
+                
+                # Manual party selection
+                selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE),
+                
+                hr(),
+                
+                h5("Download Section", align = "center"),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("party_lr_download", label = "Party L-R Plot"),
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("party_vs_download", label = "Party Vote Share Plot"),
+                )
             
-            hr(),
             
-            h5("Download Section", align = "center"),
-            
-            div(style = "text-align: center;", 
-                plotDownloadButton("party_lr_download", label = "Party L-R Plot"),
-            ),
-            
-            br(),
-            
-            div(style = "text-align: center;", 
-                plotDownloadButton("party_vs_download", label = "Party Vote Share Plot"),
             )
-            
-            
             
             
             

@@ -37,7 +37,7 @@ if (! "pg_logo.svg" %in% list.files()) {
 }
 
 
-# data section ------------------------------------------------------------
+# Data Section ------------------------------------------------------------
 
 # Create "Data subfolder" if not existing
 if (! dir.exists(here::here("Data"))) {
@@ -75,16 +75,21 @@ if (last_changed < custom_date | is.infinite(last_changed)) {
 
 # Add data to environment
 party_main <- read_csv(here::here("Data", "view_party.csv"), locale = locale(encoding = "Latin1"))
-elec_main <- read_csv(here::here("Data", "view_election.csv"), locale = locale(encoding = "Latin1"))
+election_main <- read_csv(here::here("Data", "view_election.csv"), locale = locale(encoding = "Latin1"))
 cab_main <- read_csv(here::here("Data", "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
 
-country_list <- elec_main %>% 
+# Country Search UI Input
+country_list <- election_main %>% 
   distinct(country_name, country_name_short) %>% 
   mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
   arrange(country_both) %>% 
   add_row(country_both = "All", .before = 1) %>% 
   pull(country_both)
 
+
+
+# Party -------------------------------------------------------------------
+# Party Search UI Input
 party_list <- party_main %>% 
   mutate(party_both = paste0(party_name_english, 
                              "/",
@@ -98,6 +103,7 @@ party_list <- party_main %>%
   mutate(party_both = str_remove(party_both, "\"")) %>% 
   pull(party_both)
 
+# Party LR Plot Y Axis
 party_y_value <- c("state_market", 
                    "liberty_authority", 
                    "eu_anti_pro")
@@ -105,6 +111,7 @@ names(party_y_value) <- c("State/Market (Regulation of the Economy)",
                           "Libertarian/Authoritarian",
                           "Position towards EU Integration")
 
+# Party VS Plot Election Type
 elec_type <- c("all",
                "parliament",
                "ep")
@@ -112,11 +119,27 @@ names(elec_type) <- c("All Elections",
                       "Parliamentary Elections",
                       "EP Elections")
 
-# party color
+
+
+
+# Election ----------------------------------------------------------------
+# Election Search UI Input
+election_list <- election_main %>% 
+  mutate(election_date_both = paste0(election_date,
+                                     " | ",
+                                     country_name)) %>%
+  mutate(election_date_both = if_else(election_type == "ep",
+                                      paste0(election_date_both, " (EP)"),
+                                      election_date_both)) %>% 
+  arrange(desc(election_date)) %>% 
+  pull(election_date_both)
+
+# Party Color (All)
 pg_party_color_raw <- read.csv(here::here("pg_party_color.csv"))
 
 pg_party_color <- pg_party_color_raw %>% 
   rename(party_id = dataset_party_id) %>% 
+  mutate(color_1 = str_trim(color_1)) %>% 
   # mutate(color = case_when(
   #   pg_party_id %in% c(808, 501, 791, …) ~ color_2,
   #   TRUE ~ color_1
@@ -134,7 +157,3 @@ pg_party_color <- pg_party_color_raw %>%
   select(color, party_id) %>% 
   mutate(color = if_else(is.na(color), "grey", color))
 
-
-# cab_raw <- read_csv(paste0(pg_url, "view_cabinet.csv"))
-# elec_raw <- read_csv(paste0(pg_url, "view_election.csv"))
-# party_raw <- read_csv(paste0(pg_url, "view_party.csv"))

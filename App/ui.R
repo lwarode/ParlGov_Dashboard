@@ -1,5 +1,5 @@
 library(shiny)
-library(shinydashboard)
+library(shinydashboard) # library(bs4Dash)
 library(shinyWidgets)
 library(shinycssloaders)
 library(shinyjs)
@@ -41,7 +41,10 @@ dashboardPage(
             # verbatimTextOutput("party_family"),
             
             # Manual search engine
-            selectInput("country_search", "Search Countries", choices = country_list, multiple = TRUE),
+            selectInput("country_search", 
+                        "Search Countries", 
+                        choices = country_list, 
+                        multiple = TRUE),
             
             # Conditional Party Panel
             conditionalPanel(
@@ -49,7 +52,10 @@ dashboardPage(
                 condition = "input.sidebarid == 'party_section'",
                 
                 # Manual party selection
-                selectInput("party_search", "Search Parties", choices = party_list, multiple = TRUE),
+                selectInput("party_search", 
+                            "Search Parties", 
+                            choices = party_list, 
+                            multiple = TRUE),
                 
                 hr(),
                 
@@ -59,13 +65,13 @@ dashboardPage(
                 h5("Download Plots", align = "center"),
                 
                 div(style = "text-align: center;", 
-                    plotDownloadButton("party_lr_download", label = "Party L-R Plot"),
+                    plotDownloadButton("party_lr_download", label = "Party L-R Plot")
                 ),
                 
                 br(),
                 
                 div(style = "text-align: center;", 
-                    plotDownloadButton("party_vs_download", label = "Party Vote Share Plot"),
+                    plotDownloadButton("party_vs_download", label = "Party Vote Share Plot")
                 ),
                 
                 br(),
@@ -73,29 +79,38 @@ dashboardPage(
                 h5("Download Datasets", align = "center"),
                 
                 div(style = "text-align: center;",
-                    excelDownloadButton("party_df_all_download", label = "All Party Data"),
+                    excelDownloadButton("party_df_all_download", label = "All Party Data")
                 ),
 
                 br(),
 
                 div(style = "text-align: center;",
-                    excelDownloadButton("party_df_country_download", label = "Country Party Data"),
+                    excelDownloadButton("party_df_country_download", label = "Country Party Data")
                 ),
 
                 br(),
 
                 div(style = "text-align: center;",
-                    excelDownloadButton("party_df_party_download", label = "Selected Party Data"),
+                    excelDownloadButton("party_df_party_download", label = "Selected Party Data")
                 ),
-                
-                verbatimTextOutput("debug")
 
             ),
             
             # Conditional Election Panel
             conditionalPanel(
                 
-                condition = "input.sidebarid == 'election_section'"
+                condition = "input.sidebarid == 'election_section'",
+                
+                # Manual party selection
+                selectInput("election_search", 
+                            "Search Elections", 
+                            choices = election_list, 
+                            multiple = FALSE),
+                
+                hr(),
+                
+                # Download Section
+                h4("Download Section", align = "center")
                 
             ),
             
@@ -184,10 +199,39 @@ dashboardPage(
                 
                 ),
             
-            # Elections
+            # Elections ---------------------------------------------------------------
             tabItem(
                 tabName = "election_section",
-                h2("Elections", align = "center")
+                
+                h2("Elections", align = "center"),
+                
+                hr(),
+                
+                # Plots
+                fluidRow(
+                    
+                    column(width = 6,
+                           plotOutput("election_votes_plot") %>% 
+                               withSpinner(color = "#2076B6")
+                    ),
+                    
+                    column(width = 6,
+                           plotOutput("election_seats_plot") %>% 
+                               withSpinner(color = "#2076B6")
+                    )
+                    
+                ),
+                
+                hr(),
+                
+                h4("Browse full Elections data", align = "center"),
+                fluidRow(
+                    column(
+                        DT::dataTableOutput("election_table"), width = 12
+                    )
+                )
+                
+                
                 
             ),
             

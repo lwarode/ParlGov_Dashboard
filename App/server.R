@@ -1,5 +1,5 @@
 library(shiny)
-library(shinydashboard)
+library(shinydashboard) # library(bs4Dash)
 library(shinyjs)
 library(tidyverse)
 
@@ -38,20 +38,46 @@ function(input, output, session) {
     
   })
   
-  observeEvent(input$country_search, {
-
-    # if (!is.null(input$country_search) && input$country_search != "All") {
-
-      updateSelectInput(session, 
-                        "party_search", 
-                        choices = party_list_reactive(),
-                        selected = input$party_search)
-
-    # }
+  election_list_reactive <- reactive({
+    
+    if (input$country_search == "All") {
+      
+      party_list
+      
+    } else {
+      
+      election_main %>% 
+        mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+        filter(country_both %in% input$country_search) %>% 
+        mutate(election_date_both = paste0(election_date,
+                                           " | ",
+                                           country_name)) %>%
+        mutate(election_date_both = if_else(election_type == "ep",
+                                            paste0(election_date_both, " (EP)"),
+                                            election_date_both)) %>% 
+        arrange(desc(election_date)) %>% 
+        pull(election_date_both)
+      
+    }
     
   })
   
-  # Party L-R Section -------------------------------------------------------
+  observeEvent(input$country_search, {
+    
+    updateSelectInput(session, 
+                      "party_search", 
+                      choices = party_list_reactive(),
+                      selected = input$party_search)
+    
+    updateSelectInput(session,
+                      "election_search",
+                      choices = election_list_reactive(),
+                      selected = input$election_search)
+    
+  })
+  
+
+  # Party df ----------------------------------------------------------------
   party_df <- reactive({
     
     party_main %>% 
@@ -69,8 +95,9 @@ function(input, output, session) {
                                        ")")) %>% 
       filter(party_both %in% input$party_search)
     
-  })
+  })  
   
+  # Party L-R Section -------------------------------------------------------
   # Party Family Character
   party_family <- reactive({
     
@@ -131,11 +158,11 @@ function(input, output, session) {
   
 
   # Party (Elec) Vote Share Section -----------------------------------------
-  elec_df <- reactive({
+  elec_party_df <- reactive({
     
     if (input$elec_type_vs == "all") {
       
-      elec_main %>% 
+      election_main %>% 
         mutate(party_both = paste0(party_name_english, 
                                            "/",
                                            party_name,
@@ -164,7 +191,7 @@ function(input, output, session) {
 
     } else {
       
-      elec_main %>% 
+      election_main %>% 
         mutate(party_both = paste0(party_name_english, 
                                    "/",
                                    party_name,
@@ -191,7 +218,7 @@ function(input, output, session) {
   # Max Vote Share Character
   elec_max_vs <- reactive({
     
-    elec_df() %>% 
+    elec_party_df() %>% 
         group_by(party_id) %>% 
         mutate(max_vs = max(vote_share, na.rm = TRUE)) %>% 
         distinct(max_vs, party_name_short, .keep_all = TRUE) %>% 
@@ -216,22 +243,22 @@ function(input, output, session) {
  
   party_vs <- reactive({
     
-    color_vec <- elec_df() %>% 
+    color_vec <- elec_party_df() %>% 
       left_join(pg_party_color, by = "party_id") %>% 
       distinct(party_id, color) %>% 
       pull(color)
     
-    names(color_vec) <- elec_df() %>% 
+    names(color_vec) <- elec_party_df() %>% 
       left_join(pg_party_color, by = "party_id") %>% 
       distinct(party_id, color, party_name_short) %>% 
       pull(party_name_short)
     
     # Most recent Election date for highlighting in plot
-    # max_elec_date_df <- elec_df() %>% 
+    # max_elec_date_df <- elec_party_df() %>% 
     #   group_by(party_id) %>% 
     #   summarise(max_elec_date = max(election_date), party_name_short) 
     
-    ggplot(elec_df(), aes(x = election_date, y = vote_share, color = party_name_short)) +
+    ggplot(elec_party_df(), aes(x = election_date, y = vote_share, color = party_name_short)) +
       geom_line(size = 1.5, alpha = 0.75) +
       # geom_path() +
       geom_point(size = 2.5) +
@@ -371,8 +398,6 @@ function(input, output, session) {
     
   )
   
-  
-  
   # enable/disable downloads
   ## party_search
   observe({
@@ -417,6 +442,85 @@ function(input, output, session) {
     
   })
   
+
+  # Election df -------------------------------------------------------------
+  election_df <- reactive({
+    
+    election_main %>% 
+      mutate(election_date_both = paste0(election_date,
+                                         " | ",
+                                         country_name)) %>%
+      mutate(election_date_both = if_else(election_type == "ep",
+                                          paste0(election_date_both, " (EP)"),
+                                          election_date_both)) %>% 
+      filter(election_date_both %in% input$election_search)
+    
+  }) 
   
+  election_color <- reactive({
+    
+    color_vec <- election_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color) %>% 
+      pull(color)
+    
+    names(color_vec) <- election_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color, party_name_short) %>% 
+      pull(party_name_short)
+    
+    return(color_vec)
+    
+  })
+
+  # Election Votes Section --------------------------------------------------
+  election_votes <- reactive({
+
+    election_df() %>% 
+      mutate(vote_share_label = paste0("vote_share", "%")) %>% 
+      ggplot(
+           aes(x = fct_reorder(party_name_short, - vote_share), 
+               y = vote_share)) +
+      geom_col(aes(fill = party_name_short)) +
+      geom_text(aes(label = vote_share_label), nudge_y = 1) +
+      theme_pg() +
+      theme(legend.position = "none") +
+      scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+      scale_fill_manual(values = election_color()) +
+      labs(x = "Party",
+           y = "Vote Share")
+
+  })
+
+  output$election_votes_plot <- renderPlot({
+
+    election_votes()
+
+  })
+
+  output$election_votes_download <- downloadHandler(
+
+    filename = "plot_election_vs.png",
+
+    content = function(file) {
+
+      ggsave(election_votes(), filename = file, device = "png", width = 10, height = 5)
+
+    }
+
+  )
+  
+
+  # Election Table ----------------------------------------------------------
+  output$election_table <- DT::renderDataTable({
+    
+    election_df() %>% 
+      select(- election_date_both) %>% 
+      DT::datatable(options = list(dom = "t",
+                                   # autoWidth = TRUE,
+                                   scrollX = TRUE))
+    # columnDefs = list(list(width = "100px", targets = "_all"))))
+    
+  })
   
 }

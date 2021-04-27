@@ -104,13 +104,28 @@ dashboardPage(
                 # Manual party selection
                 selectInput("election_search", 
                             "Search Elections", 
-                            choices = election_list, 
-                            multiple = FALSE),
+                            choices = election_list),
                 
                 hr(),
                 
                 # Download Section
-                h4("Download Section", align = "center")
+                h4("Download Section", align = "center"),
+                
+                h5("Download Plots", align = "center"),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("election_votes_download", label = "Election Votes Plot")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("election_seats_download", label = "Election Seats Plot")
+                ),
+                
+                br(),
+                
+                h5("Download Datasets", align = "center")
                 
             ),
             

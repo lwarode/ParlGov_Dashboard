@@ -476,8 +476,25 @@ function(input, output, session) {
   # Election Votes Section --------------------------------------------------
   election_votes <- reactive({
 
+    if (input$election_search != "") {
+      
+      plot_title <- election_df() %>% 
+        mutate(plot_title = paste0("Election Date: ", 
+                                   election_date,
+                                   " (",
+                                   country_name,
+                                   ")")) %>% 
+        distinct(plot_title) %>% 
+        pull() 
+      
+    } else {
+      
+      plot_title <- ""
+      
+    }
+        
     election_df() %>% 
-      mutate(vote_share_label = paste0("vote_share", "%")) %>% 
+      mutate(vote_share_label = paste0(vote_share, "%")) %>% 
       ggplot(
            aes(x = fct_reorder(party_name_short, - vote_share), 
                y = vote_share)) +
@@ -488,7 +505,10 @@ function(input, output, session) {
       scale_y_continuous(labels = scales::percent_format(scale = 1)) +
       scale_fill_manual(values = election_color()) +
       labs(x = "Party",
-           y = "Vote Share")
+           y = "Vote Share",
+           title = plot_title)
+      
+    
 
   })
 
@@ -500,17 +520,16 @@ function(input, output, session) {
 
   output$election_votes_download <- downloadHandler(
 
-    filename = "plot_election_vs.png",
+    filename = "plot_election_votes.png",
 
     content = function(file) {
 
-      ggsave(election_votes(), filename = file, device = "png", width = 10, height = 5)
+      ggsave(election_votes(), filename = file, device = "png", width = 8, height = 5)
 
     }
 
   )
   
-
   # Election Table ----------------------------------------------------------
   output$election_table <- DT::renderDataTable({
     
@@ -520,6 +539,32 @@ function(input, output, session) {
                                    # autoWidth = TRUE,
                                    scrollX = TRUE))
     # columnDefs = list(list(width = "100px", targets = "_all"))))
+    
+  })
+  
+  # enable/disable downloads
+  ## election_search
+  observe({
+    
+    if (input$election_search == "") {
+      
+      # Plots
+      disable("election_votes_download")
+      disable("election_seats_download")
+      
+      # Datasets
+      # disable("party_df_party_download")
+      
+    } else {
+      
+      # Plots
+      enable("election_votes_download")
+      enable("election_seats_download")
+      
+      # Datasets
+      # enable("party_df_party_download")
+      
+    }
     
   })
   

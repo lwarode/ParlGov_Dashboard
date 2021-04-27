@@ -2,6 +2,7 @@ library(shiny)
 library(shinydashboard) # library(bs4Dash)
 library(shinyjs)
 library(tidyverse)
+library(ggparliament)
 
 # source(here::here("global.R"))
 source(here::here("theme_pg.R"))
@@ -439,7 +440,6 @@ function(input, output, session) {
       
     } 
     
-    
   })
   
 
@@ -507,28 +507,55 @@ function(input, output, session) {
       labs(x = "Party",
            y = "Vote Share",
            title = plot_title)
-      
-    
 
   })
-
+  
   output$election_votes_plot <- renderPlot({
-
+    
     election_votes()
-
+    
   })
 
-  output$election_votes_download <- downloadHandler(
 
-    filename = "plot_election_votes.png",
-
-    content = function(file) {
-
-      ggsave(election_votes(), filename = file, device = "png", width = 8, height = 5)
-
+  # Election Seats section --------------------------------------------------
+  election_seats <- reactive({
+    
+    if (input$election_search != "") {
+    
+      # Number of Rows for Seat Plot
+      parl_rows_nr <- election_df() %>% 
+        distinct(seats_total) %>% 
+        mutate(seats = seats_total / 60) %>% 
+        pull() %>% 
+        round(0)
+      
+      election_lr_arranged <- election_df() %>% 
+        filter(seats > 0) %>% 
+        arrange(left_right)
+      
+      election_parliament <- parliament_data(
+        election_data = election_lr_arranged,  
+        parl_rows = parl_rows_nr,
+        type = 'semicircle',
+        party_seats = election_lr_arranged$seats
+      )
+      
+      ggplot(election_parliament, 
+             aes(x, y, color = party_name_short)) +
+        geom_parliament_seats(size = 3) +
+        theme_ggparliament(legend = TRUE) +
+        scale_color_manual("Party", values = election_color())
+    
     }
 
-  )
+    
+  })
+  
+  output$election_seats_plot <- renderPlot({
+    
+    election_seats()
+    
+  })
   
   # Election Table ----------------------------------------------------------
   output$election_table <- DT::renderDataTable({
@@ -541,6 +568,22 @@ function(input, output, session) {
     # columnDefs = list(list(width = "100px", targets = "_all"))))
     
   })
+  
+
+  # Election Downloads ------------------------------------------------------
+  output$election_votes_download <- downloadHandler(
+    
+    filename = "plot_election_votes.png",
+    
+    content = function(file) {
+      
+      ggsave(election_votes(), filename = file, device = "png", width = 8, height = 5)
+      
+    }
+    
+  )
+  
+  
   
   # enable/disable downloads
   ## election_search

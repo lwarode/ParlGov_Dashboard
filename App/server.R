@@ -3,6 +3,7 @@ library(shinydashboard) # library(bs4Dash)
 library(shinyjs)
 library(tidyverse)
 library(ggparliament)
+library(patchwork)
 
 # source(here::here("global.R"))
 source(here::here("theme_pg.R"))
@@ -43,7 +44,7 @@ function(input, output, session) {
     
     if (input$country_search == "All") {
       
-      party_list
+      election_list
       
     } else {
       
@@ -523,28 +524,90 @@ function(input, output, session) {
     if (input$election_search != "") {
     
       # Number of Rows for Seat Plot
-      parl_rows_nr <- election_df() %>% 
+      seats_election <- election_df() %>% 
         distinct(seats_total) %>% 
-        mutate(seats = seats_total / 60) %>% 
-        pull() %>% 
-        round(0)
+        pull()
       
+      parl_rows_df <- tibble(
+        seats = seq(0, 700, 100),
+        parl_rows = seq(5, 12, 1)
+      )
+      
+      parl_rows_nr <- parl_rows_df %>% 
+        filter(seats < seats_election) %>% 
+        filter(parl_rows == max(parl_rows)) %>% 
+        pull(parl_rows) 
+    
+      # Arranged (L-R) df
       election_lr_arranged <- election_df() %>% 
         filter(seats > 0) %>% 
-        arrange(left_right)
+        arrange(left_right) %>% 
+        mutate(cum_seats = cumsum(seats),
+               seat_share = seats / seats_total * 100,
+               seat_share_label = seat_share %>% round(1) %>% as.character() %>% paste0("%"),
+               cum_seats_position = case_when(
+                 cum_seats == min(cum_seats) ~ cum_seats / 2,
+                 TRUE ~ lag(cum_seats) + (seats / 2)
+               ),
+               full_label = paste0(seats, " Seats", " (", seat_share_label, ")"))
+      
+      election_lr_arranged_no_na <- election_df() %>% 
+        mutate(seat_share = seats / seats_total * 100,
+               seat_share_label = seat_share %>% round(1) %>% as.character() %>% paste0("%")) %>% 
+        filter(seats > 0,
+               seat_share > 2.5,
+               ! is.na(left_right)) %>% 
+        arrange(left_right) %>% 
+        mutate(cum_seats = cumsum(seats),
+               # seat_share = seats / seats_total * 100,
+               # seat_share_label = seat_share %>% round(1) %>% as.character() %>% paste0("%"),
+               cum_seats_position = case_when(
+                 cum_seats == min(cum_seats) ~ cum_seats / 2,
+                 TRUE ~ lag(cum_seats) + (seats / 2)
+               ),
+               full_label = paste0(seats, " Seats", " (", seat_share_label, ")"))
+
+      # Color for all Seats
+      color_seats <- election_color() %>% 
+        data.frame() %>% 
+        rownames_to_column("colour") %>%
+        rename(party_name_short = 1, colour = 2) 
       
       election_parliament <- parliament_data(
         election_data = election_lr_arranged,  
         parl_rows = parl_rows_nr,
         type = 'semicircle',
         party_seats = election_lr_arranged$seats
-      )
+      ) %>% 
+        left_join(color_seats, by = "party_name_short")
       
-      ggplot(election_parliament, 
-             aes(x, y, color = party_name_short)) +
-        geom_parliament_seats(size = 3) +
+      seats_parl <- ggplot(election_parliament, 
+                           aes(x, y, color = party_name_short)) +
+        geom_parliament_seats() +
         theme_ggparliament(legend = TRUE) +
+        theme(legend.position = "top") +
+        guides(color = guide_legend(nrow = 2)) +
         scale_color_manual("Party", values = election_color())
+      
+      seats_share <- ggplot(election_lr_arranged_no_na,
+                            aes(x = seats, 
+                                y = "", 
+                                fill = fct_reorder(party_name_short, - left_right))) +
+        geom_col(color = "black", alpha = 0.75) +
+        geom_text(aes(x = cum_seats_position, label = full_label), 
+                  size = 3, 
+                  angle = 90) +
+        geom_text(aes(x = cum_seats_position, label = party_name_short), 
+                  nudge_y = -0.5, 
+                  size = 3) +
+        scale_fill_manual("Party", values = election_color()) +
+        theme_void() +
+        theme(legend.position = "none") 
+      
+      # Final plot
+      final_plot <- seats_parl / seats_share + plot_layout(heights = c(1.5, 1))
+      
+      return(final_plot)
     
     }
 

@@ -14,6 +14,7 @@ source(here::here("theme_pg.R"))
 function(input, output, session) {
   
   # UI update ---------------------------------------------------------------
+  # Party
   party_list_reactive <- reactive({
     
     if (input$country_search == "All") {
@@ -40,6 +41,7 @@ function(input, output, session) {
     
   })
   
+  # Election
   election_list_reactive <- reactive({
     
     if (input$country_search == "All") {
@@ -64,16 +66,48 @@ function(input, output, session) {
     
   })
   
+  # Cabinet
+  cabinet_list_reactive <- reactive({
+    
+    if (input$country_search == "All") {
+      
+      cabinet_list
+      
+    } else {
+      
+      cabinet_main %>% 
+        mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+        filter(country_both %in% input$country_search) %>% 
+        mutate(cabinet_name_year = paste0(cabinet_name,
+                                          " (",
+                                          lubridate::year(election_date),
+                                          ")")) %>% 
+        arrange(desc(election_date)) %>%
+        distinct(cabinet_name_year) %>% 
+        pull(cabinet_name_year)
+      
+    }
+    
+  })
+  
   observeEvent(input$country_search, {
     
+    # Party Search
     updateSelectInput(session, 
                       "party_search", 
                       choices = party_list_reactive(),
                       selected = input$party_search)
     
+    # Election Search
     updateSelectInput(session,
                       "election_search",
                       choices = election_list_reactive(),
+                      selected = input$election_search)
+    
+    # Cabinet Search
+    updateSelectInput(session,
+                      "cabinet_search",
+                      choices = cabinet_list_reactive(),
                       selected = input$election_search)
     
   })
@@ -701,7 +735,6 @@ function(input, output, session) {
     
   })
   
-  
   # Country Election Data
   output$election_df_country_download <- downloadHandler(
     
@@ -796,5 +829,55 @@ function(input, output, session) {
     } 
     
   })
+  
+
+  # Cabinet df --------------------------------------------------------------
+  cabinet_df <- reactive({
+    
+    cabinet_main %>% 
+      mutate(cabinet_name_year = paste0(cabinet_name,
+                                        " (",
+                                        lubridate::year(election_date),
+                                        ")")) %>% 
+      filter(cabinet_name_year %in% input$cabinet_search)
+    
+  }) 
+
+  # Cabinet Prime Minister
+  cabinet_pm <- reactive({
+    
+    cabinet_df() %>% 
+      filter(prime_minister == 1) %>% 
+      mutate(cabinet_pm_label = paste0(party_name_short, " | ", cabinet_name_year)) %>%  
+      pull(cabinet_pm_label) %>% 
+      toString()
+    
+  })
+  
+  # UI InfoBox Prime Minister
+  output$cabinet_pm <- renderInfoBox({
+    
+    infoBox(
+      "Party of Prime Minister", 
+      value = tags$p(cabinet_pm(), style = "font-size: 75%;"), 
+      icon = icon("user-tie"), 
+      color = "blue"
+    )
+    
+  })
+  
+
+  # Cabinet Table -----------------------------------------------------------
+  output$cabinet_table <- DT::renderDataTable({
+    
+    cabinet_df() %>% 
+      select(- cabinet_name_year) %>% 
+      DT::datatable(options = list(dom = "t",
+                                   # autoWidth = TRUE,
+                                   scrollX = TRUE))
+    # columnDefs = list(list(width = "100px", targets = "_all"))))
+    
+  })
+  
   
 }

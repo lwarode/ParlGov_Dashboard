@@ -145,19 +145,6 @@ function(input, output, session) {
     party_lr()
     
   })
-  
-  output$party_lr_download <- downloadHandler(
-    
-    filename = "plot_party_lr.png",
-    
-    content = function(file) {
-      
-      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
-      
-    }
-    
-  )
-  
 
   # Party (Elec) Vote Share Section -----------------------------------------
   elec_party_df <- reactive({
@@ -286,17 +273,7 @@ function(input, output, session) {
     
   })
   
-  output$party_vs_download <- downloadHandler(
-    
-    filename = "plot_party_vs.png",
-    
-    content = function(file) {
-      
-      ggsave(party_vs(), filename = file, device = "png", width = 10, height = 5)
-      
-    }
-    
-  )
+
 
   
   
@@ -317,6 +294,32 @@ function(input, output, session) {
   
 
   # Party Downloads ---------------------------------------------------------
+  # Plot L-R
+  output$party_lr_download <- downloadHandler(
+    
+    filename = "plot_party_lr.png",
+    
+    content = function(file) {
+      
+      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
+      
+    }
+    
+  )
+  
+  # Plot Vote Share
+  output$party_vs_download <- downloadHandler(
+    
+    filename = "plot_party_vs.png",
+    
+    content = function(file) {
+      
+      ggsave(party_vs(), filename = file, device = "png", width = 10, height = 5)
+      
+    }
+    
+  )
+  
   # All Party Data
   output$party_df_all_download <- downloadHandler(
     
@@ -330,7 +333,7 @@ function(input, output, session) {
     
   )
   
-  # Data Frame of select Countries
+  # Data Frame of selected Country
   party_country_df <- reactive({
     
     if (! input$country_search == "All") {
@@ -611,10 +614,11 @@ function(input, output, session) {
     
     }
 
-    
   })
   
   output$election_seats_plot <- renderPlot({
+    
+    # validate(need(input$election_search, paste0("Select Election")))
     
     election_seats()
     
@@ -646,6 +650,108 @@ function(input, output, session) {
     
   )
   
+  output$election_seats_download <- downloadHandler(
+    
+    filename = "plot_election_seats.png",
+    
+    content = function(file) {
+      
+      ggsave(election_seats(), filename = file, device = "png", width = 10, height = 6)
+      
+    }
+    
+  )
+  
+  # All Election Data
+  output$election_df_all_download <- downloadHandler(
+    
+    filename = "election_all_data.xlsx",
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(election_main, file = file)
+      
+    }
+    
+  )
+  
+  # Data Frame of selected Country
+  election_country_df <- reactive({
+    
+    if (! input$country_search == "All") {
+      
+      election_main %>% 
+        mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+        filter(country_both %in% input$country_search) %>% 
+        select(- country_both)
+      
+    }
+    
+  })
+  
+  # Character of selected Country
+  election_country_chr <- reactive({
+    
+    election_country_df() %>%
+      mutate(country_election = paste0(country_name_short,
+                                       "_election_data")) %>% 
+      pull(country_election) %>% 
+      unique() %>% 
+      toString() 
+    
+  })
+  
+  
+  # Country Election Data
+  output$election_df_country_download <- downloadHandler(
+    
+    filename = function() {
+      
+      paste0(election_country_chr(), ".xlsx")
+      
+    }, 
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(election_country_df(), file = file)
+      
+    }
+    
+  )
+  
+  # Character of selected Election
+  election_election_chr <- reactive({
+    
+    election_df() %>% 
+      mutate(country_election = paste(country_name_short, 
+                                      election_date %>% as.character(),
+                                      election_type,
+                                      sep = "_")) %>% 
+      # distinct(country_election) %>% 
+      pull(country_election) %>% 
+      unique() %>% 
+      toString() 
+    
+  })
+  
+  # (Selected) Election Data
+  output$election_df_election_download <- downloadHandler(
+    
+    filename = function() {
+      
+      paste0(election_election_chr(), ".xlsx")
+      
+    }, 
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(election_df(), file = file)
+      
+    }
+    
+  )
+  
+  
   
   
   # enable/disable downloads
@@ -659,7 +765,7 @@ function(input, output, session) {
       disable("election_seats_download")
       
       # Datasets
-      # disable("party_df_party_download")
+      disable("election_df_election_download")
       
     } else {
       
@@ -668,9 +774,26 @@ function(input, output, session) {
       enable("election_seats_download")
       
       # Datasets
-      # enable("party_df_party_download")
+      enable("election_df_election_download")
       
     }
+    
+  })
+  
+  ## country_search
+  observe({
+    
+    if (is.null(input$country_search) || input$country_search == "All") {
+      
+      # Datasets
+      disable("election_df_country_download")
+      
+    } else {
+      
+      # Datasets
+      enable("election_df_country_download")
+      
+    } 
     
   })
   

@@ -125,7 +125,23 @@ dashboardPage(
                 
                 br(),
                 
-                h5("Download Datasets", align = "center")
+                h5("Download Datasets", align = "center"),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("election_df_all_download", label = "All Election Data")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("election_df_country_download", label = "Country Election Data")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("election_df_election_download", label = "Selected Election Data")
+                )
                 
             ),
             

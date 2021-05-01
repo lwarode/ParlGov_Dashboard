@@ -22,7 +22,14 @@ excelDownloadButton <- function(outputId, label = "Download"){
 dashboardPage(
  
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
-                                  tags$img(src = "http://www.parlgov.org/static/images/parlgov-logo.svg"))),
+                                  tags$img(src = "http://www.parlgov.org/static/images/parlgov-logo.svg",
+                                           title = "ParlGov Webpage")),
+                    
+                    # Link to GitHub Repository
+                    tags$li(a(title = "Link to GitHub Repository", 
+                              href = "https://github.com/lwarode/ParlGov_Dashboard",
+                              icon("github")),
+                            class = "dropdown")),
     
     dashboardSidebar(
         
@@ -148,7 +155,52 @@ dashboardPage(
             # Conditional Cabinet Panel
             conditionalPanel(
                 
-                condition = "input.sidebarid == 'cabinet_section'"
+                condition = "input.sidebarid == 'cabinet_section'",
+                
+                # Manual cabinet selection
+                selectInput("cabinet_search", 
+                            "Search Cabinet", 
+                            choices = cabinet_list,
+                            multiple = TRUE
+                            # selected = NULL
+                            ),
+                
+                hr(),
+                
+                # Download Section
+                h4("Download Section", align = "center"),
+                
+                h5("Download Plots", align = "center"),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("election_votes_download", label = "Election Votes Plot")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;", 
+                    plotDownloadButton("election_seats_download", label = "Election Seats Plot")
+                ),
+                
+                br(),
+                
+                h5("Download Datasets", align = "center"),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("cabinet_df_all_download", label = "All Cabinet Data")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("cabinet_df_country_download", label = "Country Cabinet Data")
+                ),
+                
+                br(),
+                
+                div(style = "text-align: center;",
+                    excelDownloadButton("cabinet_df_cabinet_download", label = "Selected Cabinet Data")
+                )
                 
             )
             
@@ -265,18 +317,35 @@ dashboardPage(
                 
                 
             ),
-            
-            # Cabinets
+
+            # Cabinets ----------------------------------------------------------------
             tabItem(
                 tabName = "cabinet_section",
-                h2("Cabinets", align = "center")
+                
+                h2("Cabinets", align = "center"),
+                
+                hr(),
+                
+                fluidRow(
+                    
+                    # Left side
+                    column(width = 6,
+                           uiOutput("cabinet_pm")
+                    )
+                ),
+                  
+                hr(),
+                
+                h4("Browse full Cabinets data", align = "center"),
+                fluidRow(
+                    column(
+                        DT::dataTableOutput("cabinet_table"), width = 12
+                    )
+                )
                 
             )
             
-            
         ),
-        
-        
         
         # Color properties
         tags$head(tags$style(HTML('

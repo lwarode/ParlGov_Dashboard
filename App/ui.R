@@ -29,6 +29,12 @@ dashboardPage(
                     tags$li(a(title = "Link to GitHub Repository", 
                               href = "https://github.com/lwarode/ParlGov_Dashboard",
                               icon("github")),
+                            class = "dropdown"),
+                    
+                    # ParlGov Documentation
+                    tags$li(a(title = "ParlGov Documentation", 
+                              href = "http://www.parlgov.org/#documentation",
+                              icon("align-left")),
                             class = "dropdown")),
     
     dashboardSidebar(

@@ -25,7 +25,8 @@ theme_pg <- function() {
       plot.title = element_text(            
         family = font,            
         size = 18,                        
-        hjust = 0.5),
+        hjust = 0.5,
+        margin = margin(0, 0, 10, 0)),
     
       plot.subtitle = element_text(          
         family = font,            

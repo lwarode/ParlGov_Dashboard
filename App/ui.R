@@ -50,16 +50,15 @@ dashboardPage(
             menuItem("Cabinets", tabName = "cabinet_section", icon = icon("landmark")),
             
             hr(),
-            
-            # verbatimTextOutput("party_family"),
-            
+        
             # Manual search engine
             selectInput("country_search", 
                         "Search Countries", 
                         choices = country_list, 
                         multiple = TRUE),
             
-            # Conditional Party Panel
+
+            # Conditional Party Panel -------------------------------------------------
             conditionalPanel(
 
                 condition = "input.sidebarid == 'party_section'",
@@ -109,7 +108,8 @@ dashboardPage(
 
             ),
             
-            # Conditional Election Panel
+
+            # Conditional Election Panel ----------------------------------------------
             conditionalPanel(
                 
                 condition = "input.sidebarid == 'election_section'",
@@ -158,7 +158,8 @@ dashboardPage(
                 
             ),
             
-            # Conditional Cabinet Panel
+
+            # Conditional Cabinet Panel -----------------------------------------------
             conditionalPanel(
                 
                 condition = "input.sidebarid == 'cabinet_section'",
@@ -178,16 +179,16 @@ dashboardPage(
                 
                 h5("Download Plots", align = "center"),
                 
-                div(style = "text-align: center;", 
-                    plotDownloadButton("election_votes_download", label = "Election Votes Plot")
+                div(style = "text-align: center;",
+                    plotDownloadButton("cabinet_lr_download", label = "Election Votes Plot")
                 ),
-                
+
                 br(),
-                
-                div(style = "text-align: center;", 
-                    plotDownloadButton("election_seats_download", label = "Election Seats Plot")
+
+                div(style = "text-align: center;",
+                    plotDownloadButton("cabinet_status_download", label = "Election Seats Plot")
                 ),
-                
+
                 br(),
                 
                 h5("Download Datasets", align = "center"),
@@ -232,13 +233,13 @@ dashboardPage(
                     column(width = 6,
                         fluidRow(
                             column(width = 6,
-                                   uiOutput("party_family")
-                            ),
-                            column(width = 6,
                                    selectInput("y_axis_id", 
                                                "Select Y-Axis Score", 
                                                choices = party_y_value
                                    )
+                            ),
+                            column(width = 6,
+                                   uiOutput("party_family")
                             )
                         )
                     ),
@@ -246,14 +247,14 @@ dashboardPage(
                     # Right side
                     column(width = 6,
                            fluidRow(
+                               column(width = 6,
+                                      selectInput("elec_type_vs", 
+                                                  "Select Election Type", 
+                                                  choices = elec_type
+                                      )
+                               ),
                                 column(width = 6,
                                        uiOutput("vs_max")
-                                ),
-                                column(width = 6,
-                                       selectInput("elec_type_vs", 
-                                                   "Select Election Type", 
-                                                   choices = elec_type
-                                       )
                                 )
                             )
                     )
@@ -320,10 +321,8 @@ dashboardPage(
                     )
                 )
                 
-                
-                
             ),
-
+            
             # Cabinets ----------------------------------------------------------------
             tabItem(
                 tabName = "cabinet_section",
@@ -338,6 +337,8 @@ dashboardPage(
                     column(width = 6,
                            uiOutput("cabinet_pm")
                     )
+                    
+                    # Right side
                 ),
                   
                 hr(),

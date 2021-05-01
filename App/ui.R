@@ -233,7 +233,7 @@ dashboardPage(
                     column(width = 6,
                         fluidRow(
                             column(width = 6,
-                                   selectInput("y_axis_id", 
+                                   selectInput("y_axis_id_party", 
                                                "Select Y-Axis Score", 
                                                choices = party_y_value
                                    )
@@ -331,14 +331,26 @@ dashboardPage(
                 
                 hr(),
                 
+                # Cabinet UI Elements
                 fluidRow(
                     
                     # Left side
                     column(width = 6,
-                           uiOutput("cabinet_pm")
+                           fluidRow(
+                               column(width = 6,
+                                      selectInput("y_axis_id_cabinet", 
+                                                  "Select Y-Axis Score", 
+                                                  choices = party_y_value
+                                      )
+                               ),
+                               column(width = 6,
+                                      uiOutput("cabinet_pm")
+                               )
+                           )
                     )
                     
                     # Right side
+                    
                 ),
                   
                 hr(),

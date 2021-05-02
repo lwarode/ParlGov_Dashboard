@@ -1015,7 +1015,12 @@ function(input, output, session) {
   # Cabinet Table -----------------------------------------------------------
   output$cabinet_table <- DT::renderDataTable({
     
-    cabinet_df() %>% 
+    cabinet_main %>% 
+      mutate(cabinet_name_year = paste0(cabinet_name,
+                                        " (",
+                                        lubridate::year(election_date),
+                                        ")")) %>% 
+      filter(cabinet_name_year %in% input$cabinet_search) %>%
       select(- cabinet_name_year) %>% 
       DT::datatable(options = list(dom = "t",
                                    # autoWidth = TRUE,

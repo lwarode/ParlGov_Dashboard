@@ -2,7 +2,7 @@ library(tidyverse)
 
 
 # ParlGov logo and colors -------------------------------------------------
-if (! "pg_logo.svg" %in% list.files()) {
+if (! "pg_logo.svg" %in% list.files(here::here("App"))) {
   
   pg_logo_url <- "http://www.parlgov.org/static/images/parlgov-logo.svg"
   
@@ -40,9 +40,9 @@ if (! "pg_logo.svg" %in% list.files()) {
 # Data Section ------------------------------------------------------------
 
 # Create "Data subfolder" if not existing
-if (! dir.exists(here::here("Data"))) {
+if (! dir.exists(here::here("App/Data"))) {
 
-  dir.create(here::here("Data"))
+  dir.create(here::here("App/Data"))
 
 }
 
@@ -146,7 +146,7 @@ cabinet_list <- cabinet_main %>%
 
 # Color (Party/All) -------------------------------------------------------
 # Party Color (All)
-pg_party_color_raw <- read.csv(here::here("pg_party_color.csv"))
+pg_party_color_raw <- read.csv(here::here("App/pg_party_color.csv"))
 
 pg_party_color <- pg_party_color_raw %>% 
   rename(party_id = dataset_party_id) %>% 

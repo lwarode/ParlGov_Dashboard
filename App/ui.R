@@ -4,7 +4,7 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(shinyjs)
 
-source(here::here("global.R"))
+source(here::here("App/global.R"))
 
 
 # custom download buttons (varying icons) ---------------------------------

@@ -1,5 +1,5 @@
 
-if (! "pg_party_color.csv" %in% list.files()) {
+if (! "pg_party_color.csv" %in% list.files(here::here("App"))) {
   
   # Packages ----------------------------------------------------------------
   library(tidyverse)
@@ -40,7 +40,7 @@ if (! "pg_party_color.csv" %in% list.files()) {
 }
 
 library(tidyverse)
-pg_party_color_raw <- read.csv("pg_party_color.csv")
+pg_party_color_raw <- read.csv(here::here("App/pg_party_color.csv"))
 
 pg_party_color <- pg_party_color_raw %>% 
   rename(party_id = dataset_party_id) %>% 

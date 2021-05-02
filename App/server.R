@@ -158,10 +158,10 @@ function(input, output, session) {
   
   party_lr <- reactive({
     
-    y_axis_var <- input$y_axis_id %>% unname()
-    y_axis_label <- which(party_y_value == input$y_axis_id) %>% names()
+    y_axis_var <- input$y_axis_id_party %>% unname()
+    y_axis_label <- which(party_y_value == input$y_axis_id_party) %>% names()
     
-    ggplot(party_df(), aes_string(x = "left_right", y = y_axis_var)) + 
+    ggplot(party_df(), aes(x = left_right, y = !! sym(y_axis_var))) + 
       geom_point(size = 2.5, alpha = 0.75) + 
       ggrepel::geom_text_repel(aes(label = party_both_short), point.size = 2.5, nudge_y = 0.25) +
       scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
@@ -381,7 +381,7 @@ function(input, output, session) {
     
   })
   
-  # Chracter of selected Countries
+  # Character of selected Countries
   party_country_chr <- reactive({
     
     party_country_df() %>% 
@@ -398,7 +398,7 @@ function(input, output, session) {
 
     filename = function() {
       
-      paste0(party_country_chr(), ".xlsx")
+      paste0(party_country_chr(), "_party_data", ".xlsx")
       
     }, 
 
@@ -727,11 +727,10 @@ function(input, output, session) {
   election_country_chr <- reactive({
     
     election_country_df() %>%
-      mutate(country_election = paste0(country_name_short,
-                                       "_election_data")) %>% 
-      pull(country_election) %>% 
+      pull(country_name_short) %>% 
       unique() %>% 
-      toString() 
+      toString() %>% 
+      stringr::str_replace_all(", ", "_") 
     
   })
   
@@ -740,7 +739,7 @@ function(input, output, session) {
     
     filename = function() {
       
-      paste0(election_country_chr(), ".xlsx")
+      paste0(election_country_chr(), "_election_data", ".xlsx")
       
     }, 
     
@@ -867,6 +866,76 @@ function(input, output, session) {
   })
   
 
+  # Cabinet L-R -------------------------------------------------------------
+  cabinet_lr <- reactive({
+
+    # Ideological Y Axis Values
+    y_axis_var <- input$y_axis_id_cabinet %>% unname() %>% sym()
+    y_axis_label <- which(party_y_value == input$y_axis_id_cabinet) %>% names()
+
+    # Compute L-R Ranges of Cabinets
+    cabinet_lr_data <- cabinet_df() %>%
+      left_join(party_main %>% select(state_market:eu_anti_pro, party_id), by = "party_id") %>%
+      mutate(lr_share = seats/election_seats_total * left_right,
+             y_share = seats/election_seats_total * !! y_axis_var) %>%
+      group_by(cabinet_id) %>%
+      summarise(max_lr = max(left_right, na.rm = TRUE),
+                min_lr = min(left_right, na.rm = TRUE),
+                mean_lr = sum(lr_share, na.rm = TRUE),
+                max_y = max(!! y_axis_var, na.rm = TRUE),
+                min_y = min(!! y_axis_var, na.rm = TRUE),
+                mean_y = sum(y_share, na.rm = TRUE),
+                cabinet_name_year) %>%
+      distinct(cabinet_name_year, .keep_all = T)
+
+    # Final Plot with Range Lines / Intervals
+    if (input$plot_cabinet_lr_choice == FALSE) {
+      
+      final_plot <- ggplot(cabinet_lr_data) +
+        geom_point(aes(x = mean_lr, y = mean_y)) +
+        ggrepel::geom_text_repel(aes(x = mean_lr, y = mean_y, label = cabinet_name_year)) +
+        scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
+        scale_y_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) +
+        geom_vline(xintercept = 5, alpha = 0.5) +
+        geom_hline(yintercept = 5, alpha = 0.5) +
+        theme_pg() +
+        labs(x = "Left-Right",
+             y = y_axis_label,
+             title = "Ideological Position of Cabinets")
+   
+      
+    } else {
+      
+      final_plot <- ggplot(cabinet_lr_data) +
+        geom_pointrange(aes(xmin = min_lr, xmax = max_lr, y = mean_y, x = mean_lr), alpha = 0.3) +
+        geom_errorbar(aes(xmin = min_lr, xmax = max_lr, y = mean_y, x = mean_lr), alpha = 0.3, width = 0.6) +
+        geom_pointrange(aes(ymin = min_y, ymax = max_y, x = mean_lr, y = mean_y), alpha = 0.3) + 
+        geom_errorbar(aes(ymin = min_y, ymax = max_y, x = mean_lr, y = mean_y), alpha = 0.3, width = 0.6) + 
+        ggrepel::geom_text_repel(aes(x = mean_lr, y = mean_y, label = cabinet_name_year)) +
+        scale_x_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) + 
+        scale_y_continuous(breaks = seq(0, 10, 1), limits = c(0, 10)) +
+        geom_vline(xintercept = 5, alpha = 0.5) +
+        geom_hline(yintercept = 5, alpha = 0.5) +
+        theme_pg() +
+        labs(x = "Left-Right",
+             y = y_axis_label,
+             title = "Ideological Range of Cabinets")
+
+    }
+    
+    
+
+    return(final_plot)
+
+  })
+
+  output$cabinet_lr_plot <- renderPlot({
+
+    cabinet_lr()
+
+  })
+  
+  
   # Cabinet Table -----------------------------------------------------------
   output$cabinet_table <- DT::renderDataTable({
     
@@ -877,6 +946,157 @@ function(input, output, session) {
                                    scrollX = TRUE))
     # columnDefs = list(list(width = "100px", targets = "_all"))))
     
+  })
+  
+  
+  # Cabinet Downloads -------------------------------------------------------
+  output$cabinet_lr_download <- downloadHandler(
+    
+    filename = "plot_cabinet_lr.png",
+    
+    content = function(file) {
+      
+      ggsave(cabinet_lr(), filename = file, device = "png", width = 8, height = 8)
+      
+    }
+    
+  )
+  
+  output$cabinet_seats_download <- downloadHandler(
+    
+    filename = "plot_cabinet_seats.png",
+    
+    content = function(file) {
+      
+      ggsave(cabinet_seats(), filename = file, device = "png", width = 10, height = 6)
+      
+    }
+    
+  )
+  
+  # All Cabinet Data
+  output$cabinet_df_all_download <- downloadHandler(
+    
+    filename = "cabinet_all_data.xlsx",
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(cabinet_main, file = file)
+      
+    }
+    
+  )
+  
+  # Data Frame of selected Country
+  cabinet_country_df <- reactive({
+    
+    if (! input$country_search == "All") {
+      
+      cabinet_main %>% 
+        mutate(country_both = paste0(country_name, " (", country_name_short, ")")) %>% 
+        filter(country_both %in% input$country_search) %>% 
+        select(- country_both)
+      
+    }
+    
+  })
+  
+  # Character of selected Country
+  cabinet_country_chr <- reactive({
+    
+    cabinet_country_df() %>%
+      pull(country_name_short) %>% 
+      unique() %>% 
+      toString() %>% 
+      stringr::str_replace_all(", ", "_") 
+    
+  })
+
+  # Country Cabinet Data
+  output$cabinet_df_country_download <- downloadHandler(
+    
+    filename = function() {
+      
+      paste0(cabinet_country_chr(),  "_cabinet_data", ".xlsx")
+      
+    }, 
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(cabinet_country_df(), file = file)
+      
+    }
+    
+  )
+  
+  # Character of selected Cabinets
+  cabinet_cabinet_chr <- reactive({
+    
+    cabinet_df() %>% 
+      pull(cabinet_name_short) %>% 
+      toString() %>% 
+      stringr::str_replace_all(", ", "_") 
+    
+  })
+  
+  # (Selected) Cabinet Data
+  output$cabinet_df_cabinet_download <- downloadHandler(
+    
+    filename = function() {
+      
+      paste0(cabinet_cabinet_chr(), ".xlsx")
+      
+    }, 
+    
+    content = function(file) {
+      
+      xlsx::write.xlsx(cabinet_df(), file = file)
+      
+    }
+    
+  )
+  
+  # enable/disable downloads
+  ## cabinet_search
+  observe({
+
+    if (is.null(input$cabinet_search)) {
+
+      # Plots
+      disable("cabinet_lr_download")
+      # disable("cabinet_seats_download")
+
+      # Datasets
+      disable("cabinet_df_cabinet_download")
+
+    } else {
+
+      # Plots
+      enable("cabinet_lr_download")
+      # enable("cabinet_seats_download")
+
+      # Datasets
+      enable("cabinet_df_cabinet_download")
+
+    }
+
+  })
+  
+  ## country_search
+  observe({
+
+    if (is.null(input$country_search) || input$country_search == "All") {
+
+      # Datasets
+      disable("cabinet_df_country_download")
+
+    } else {
+
+      # Datasets
+      enable("cabinet_df_country_download")
+
+    }
+
   })
   
   

@@ -180,13 +180,13 @@ dashboardPage(
                 h5("Download Plots", align = "center"),
                 
                 div(style = "text-align: center;",
-                    plotDownloadButton("cabinet_lr_download", label = "Election Votes Plot")
+                    plotDownloadButton("cabinet_lr_download", label = "Cabinet L-R Plot")
                 ),
 
                 br(),
 
                 div(style = "text-align: center;",
-                    plotDownloadButton("cabinet_status_download", label = "Election Seats Plot")
+                    plotDownloadButton("cabinet_seats_download", label = "Cabinet Seats Plot")
                 ),
 
                 br(),
@@ -341,7 +341,10 @@ dashboardPage(
                                       selectInput("y_axis_id_cabinet", 
                                                   "Select Y-Axis Score", 
                                                   choices = party_y_value
-                                      )
+                                      ),
+                                      awesomeCheckbox("plot_cabinet_lr_choice",
+                                                      "Show Ideological Range",
+                                                      value = FALSE)
                                ),
                                column(width = 6,
                                       uiOutput("cabinet_pm")
@@ -350,6 +353,21 @@ dashboardPage(
                     )
                     
                     # Right side
+                    
+                ),
+                
+                # Plots
+                fluidRow(
+                    
+                    column(width = 6,
+                           plotOutput("cabinet_lr_plot") %>% 
+                               withSpinner(color = "#2076B6")
+                    )
+                    
+                    # column(width = 6,
+                    #        plotOutput("party_vs_plot") %>% 
+                    #            withSpinner(color = "#2076B6")
+                    # )
                     
                 ),
                   

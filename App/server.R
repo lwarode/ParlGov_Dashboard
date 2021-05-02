@@ -838,10 +838,16 @@ function(input, output, session) {
                                         " (",
                                         lubridate::year(election_date),
                                         ")")) %>% 
-      filter(cabinet_name_year %in% input$cabinet_search)
+      filter(cabinet_name_year %in% input$cabinet_search,
+             cabinet_party == 1) %>% 
+      group_by(cabinet_name_year) %>% 
+      mutate(cabinet_seats_total = sum(seats)) %>% 
+      ungroup
     
   }) 
 
+
+  # Cabinet UI Boxes --------------------------------------------------------
   # Cabinet Prime Minister
   cabinet_pm <- reactive({
     
@@ -854,16 +860,37 @@ function(input, output, session) {
   })
   
   # UI InfoBox Prime Minister
-  output$cabinet_pm <- renderInfoBox({
+  # output$cabinet_pm <- renderInfoBox({
+  #   
+  #   infoBox(
+  #     "Party of Prime Minister", 
+  #     value = tags$p(cabinet_pm(), style = "font-size: 75%;"), 
+  #     icon = icon("user-tie"), 
+  #     color = "blue"
+  #   )
+  #   
+  # })
+  # 
+  # # Cabinet Status in Legislature
+  # cabinet_seats_status <- reactive({
+  #   
+  #   cabinet_df() %>% 
+  #     
+  #   
+  # })
+  
+  # UI InfoBox Cabinet 
+  output$cabinet_seats_status <- renderInfoBox({
     
     infoBox(
       "Party of Prime Minister", 
-      value = tags$p(cabinet_pm(), style = "font-size: 75%;"), 
-      icon = icon("user-tie"), 
+      value = tags$p(cabinet_seats_status(), style = "font-size: 75%;"), 
+      icon = icon("pie-chart"), 
       color = "blue"
     )
     
   })
+  
   
 
   # Cabinet L-R -------------------------------------------------------------
@@ -876,8 +903,9 @@ function(input, output, session) {
     # Compute L-R Ranges of Cabinets
     cabinet_lr_data <- cabinet_df() %>%
       left_join(party_main %>% select(state_market:eu_anti_pro, party_id), by = "party_id") %>%
-      mutate(lr_share = seats/election_seats_total * left_right,
-             y_share = seats/election_seats_total * !! y_axis_var) %>%
+      filter(! is.na(left_right), ! is.na(!! y_axis_var)) %>% 
+      mutate(lr_share = seats/cabinet_seats_total * left_right,
+             y_share = seats/cabinet_seats_total * !! y_axis_var) %>%
       group_by(cabinet_id) %>%
       summarise(max_lr = max(left_right, na.rm = TRUE),
                 min_lr = min(left_right, na.rm = TRUE),
@@ -923,8 +951,6 @@ function(input, output, session) {
 
     }
     
-    
-
     return(final_plot)
 
   })

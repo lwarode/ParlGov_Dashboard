@@ -137,7 +137,7 @@ election_list <- election_main %>%
 cabinet_list <- cabinet_main %>% 
   mutate(cabinet_name_year = paste0(cabinet_name,
                                     " (",
-                                    lubridate::year(election_date),
+                                    lubridate::year(start_date),
                                     ")")) %>% 
   arrange(desc(election_date)) %>%
   distinct(cabinet_name_year) %>% 

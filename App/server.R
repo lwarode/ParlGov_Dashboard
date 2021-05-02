@@ -80,7 +80,7 @@ function(input, output, session) {
         filter(country_both %in% input$country_search) %>% 
         mutate(cabinet_name_year = paste0(cabinet_name,
                                           " (",
-                                          lubridate::year(election_date),
+                                          lubridate::year(start_date),
                                           ")")) %>% 
         arrange(desc(election_date)) %>%
         distinct(cabinet_name_year) %>% 
@@ -836,7 +836,7 @@ function(input, output, session) {
     cabinet_main %>% 
       mutate(cabinet_name_year = paste0(cabinet_name,
                                         " (",
-                                        lubridate::year(election_date),
+                                        lubridate::year(start_date),
                                         ")")) %>% 
       filter(cabinet_name_year %in% input$cabinet_search,
              cabinet_party == 1) %>% 
@@ -846,6 +846,21 @@ function(input, output, session) {
     
   }) 
 
+  cabinet_color <- reactive({
+    
+    color_vec <- cabinet_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color) %>% 
+      pull(color)
+    
+    names(color_vec) <- cabinet_df() %>% 
+      left_join(pg_party_color, by = "party_id") %>% 
+      distinct(party_id, color, party_name_short) %>% 
+      pull(party_name_short)
+    
+    return(color_vec)
+    
+  })
 
   # Cabinet UI Boxes --------------------------------------------------------
   # Cabinet Prime Minister
@@ -917,7 +932,7 @@ function(input, output, session) {
       ungroup %>% 
       mutate(cabinet_name_year = paste0(cabinet_name,
                                         " (",
-                                        lubridate::year(election_date),
+                                        lubridate::year(start_date),
                                         ")")) %>% 
       filter(cabinet_name_year %in% input$cabinet_search) %>% 
       mutate(cab_term = difftime(end_date, start_date),
@@ -1011,6 +1026,56 @@ function(input, output, session) {
 
   })
   
+
+  # Cabinet Seats -----------------------------------------------------------
+  cabinet_seats <- reactive({
+    
+    cabinet_lr_arranged <- cabinet_df() %>% 
+      group_by(cabinet_id) %>% 
+      mutate(seat_share = seats / election_seats_total * 100,
+             seat_share_label = (seat_share * 100) %>% round(1) %>% as.character() %>% paste0("%")) %>% 
+      filter(seats > 0) %>% 
+      arrange(left_right) %>% 
+      mutate(cum_seats = cumsum(seat_share),
+             # seat_share = seats / seats_total * 100,
+             # seat_share_label = seat_share %>% round(1) %>% as.character() %>% paste0("%"),
+             cum_seats_position = case_when(
+               cum_seats == min(cum_seats) ~ cum_seats / 2,
+               TRUE ~ lag(cum_seats) + (seat_share / 2)
+             ),
+             full_label = paste0(seats, " Seats", " (", seat_share_label, ")"))
+    
+    cabinet_seats_share <- ggplot(cabinet_lr_arranged,
+                                  aes(x = seat_share, 
+                                      y = cabinet_name, 
+                                      fill = fct_reorder(party_name_short, - left_right))) +
+      geom_col(color = "black", alpha = 0.75) +
+      geom_text(aes(x = cum_seats_position, label = full_label), 
+                size = 3, 
+                angle = 90) +
+      geom_text(aes(x = cum_seats_position, label = party_name_short), 
+                nudge_y = -0.5, 
+                size = 3) +
+      geom_vline(xintercept = 0.5, linetype = 2, alpha = 0.75) +
+      # annotate("text", label = "50%", x = 50, y = 0.5) +
+      scale_fill_manual("Party", values = cabinet_color()) +
+      scale_x_continuous(labels = scales::percent_format(1), breaks = seq(0, 1, 0.1), limits = c(0, 1)) +
+      theme_pg() +
+      theme(legend.position = "none") + 
+      labs(x = "Seat Share",
+           y = "")
+    
+    return(cabinet_seats_share)
+    
+  })
+  
+  
+  output$cabinet_seats_plot <- renderPlot({
+    
+    cabinet_seats()
+    
+  })
+  
   
   # Cabinet Table -----------------------------------------------------------
   output$cabinet_table <- DT::renderDataTable({
@@ -1018,7 +1083,7 @@ function(input, output, session) {
     cabinet_main %>% 
       mutate(cabinet_name_year = paste0(cabinet_name,
                                         " (",
-                                        lubridate::year(election_date),
+                                        lubridate::year(start_date),
                                         ")")) %>% 
       filter(cabinet_name_year %in% input$cabinet_search) %>%
       select(- cabinet_name_year) %>% 
@@ -1145,7 +1210,7 @@ function(input, output, session) {
 
       # Plots
       disable("cabinet_lr_download")
-      # disable("cabinet_seats_download")
+      disable("cabinet_seats_download")
 
       # Datasets
       disable("cabinet_df_cabinet_download")
@@ -1154,7 +1219,7 @@ function(input, output, session) {
 
       # Plots
       enable("cabinet_lr_download")
-      # enable("cabinet_seats_download")
+      enable("cabinet_seats_download")
 
       # Datasets
       enable("cabinet_df_cabinet_download")

@@ -860,30 +860,43 @@ function(input, output, session) {
   })
   
   # UI InfoBox Prime Minister
-  # output$cabinet_pm <- renderInfoBox({
-  #   
-  #   infoBox(
-  #     "Party of Prime Minister", 
-  #     value = tags$p(cabinet_pm(), style = "font-size: 75%;"), 
-  #     icon = icon("user-tie"), 
-  #     color = "blue"
-  #   )
-  #   
-  # })
-  # 
-  # # Cabinet Status in Legislature
-  # cabinet_seats_status <- reactive({
-  #   
-  #   cabinet_df() %>% 
-  #     
-  #   
-  # })
+  output$cabinet_pm <- renderInfoBox({
+
+    infoBox(
+      "Party of Prime Minister",
+      value = tags$p(cabinet_pm(), style = "font-size: 75%;"),
+      icon = icon("user-tie"),
+      color = "blue"
+    )
+
+  })
+   
+  # Cabinet Status in Legislature
+  cabinet_seats_status <- reactive({
+
+    cabinet_df() %>%
+      group_by(cabinet_name_year) %>% 
+      summarise(election_seats = first(election_seats_total),
+                cabinet_seats = sum(seats, na.rm = TRUE),
+                seats_min = min(seats, na.rm = TRUE),
+                seats_max = max(seats, na.rm = TRUE)) %>% 
+      mutate(
+        cabinet_type = case_when(
+          cabinet_seats <= election_seats / 2 ~ "Minority",
+          cabinet_seats - seats_min > election_seats / 2 ~ "Surplus",
+          TRUE ~ "Minimum Winning"),
+        cabinet_type_label = paste0(cabinet_type, " | ", cabinet_name_year)
+      ) %>% 
+      pull(cabinet_type_label) %>% 
+      toString()
+
+  })
   
-  # UI InfoBox Cabinet 
+  # UI InfoBox Cabinet Status
   output$cabinet_seats_status <- renderInfoBox({
     
     infoBox(
-      "Party of Prime Minister", 
+      "Cabinet Status", 
       value = tags$p(cabinet_seats_status(), style = "font-size: 75%;"), 
       icon = icon("pie-chart"), 
       color = "blue"
@@ -891,6 +904,43 @@ function(input, output, session) {
     
   })
   
+  # Cabinet Term Dates
+  cabinet_term <- reactive({
+    
+    cabinet_main %>% 
+      distinct(cabinet_id, .keep_all = TRUE) %>% 
+      group_by(country_name) %>% 
+      arrange(start_date) %>%  
+      mutate(end_date = if_else(! is.na(lead(start_date)),
+                                lead(start_date),
+                                Sys.Date())) %>% 
+      ungroup %>% 
+      mutate(cabinet_name_year = paste0(cabinet_name,
+                                        " (",
+                                        lubridate::year(election_date),
+                                        ")")) %>% 
+      filter(cabinet_name_year %in% input$cabinet_search) %>% 
+      mutate(cab_term = difftime(end_date, start_date),
+             cab_term_label = paste0(start_date, " - ", end_date,
+                                     " (", cab_term, " days)",
+                                     " | ", cabinet_name_year)) %>% 
+      pull(cab_term_label) %>% 
+      toString()
+      
+    
+  })
+  
+  # UI InfoBox Cabinet Term 
+  output$cabinet_term <- renderInfoBox({
+    
+    infoBox(
+      "Cabinet Status", 
+      value = tags$p(cabinet_term(), style = "font-size: 50%;"), 
+      icon = icon("calendar"), 
+      color = "blue"
+    )
+    
+  })
   
 
   # Cabinet L-R -------------------------------------------------------------

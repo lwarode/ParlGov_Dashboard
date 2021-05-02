@@ -344,16 +344,26 @@ dashboardPage(
                                       ),
                                       awesomeCheckbox("plot_cabinet_lr_choice",
                                                       "Show Ideological Range",
-                                                      value = FALSE)
+                                                      value = TRUE)
                                ),
                                column(width = 6,
                                       uiOutput("cabinet_pm")
                                )
                            )
-                    )
+                    ),
                     
                     # Right side
-                    
+                    column(width = 6,
+                           fluidRow(
+                               column(width = 6,
+                                      uiOutput("cabinet_seats_status")
+                               ),
+                               column(width = 6,
+                                      uiOutput("cabinet_term")
+                               )
+                           )
+                    )
+      
                 ),
                 
                 # Plots

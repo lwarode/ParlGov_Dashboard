@@ -372,12 +372,12 @@ dashboardPage(
                     column(width = 6,
                            plotOutput("cabinet_lr_plot") %>% 
                                withSpinner(color = "#2076B6")
-                    )
+                    ),
                     
-                    # column(width = 6,
-                    #        plotOutput("party_vs_plot") %>% 
-                    #            withSpinner(color = "#2076B6")
-                    # )
+                    column(width = 6,
+                           plotOutput("cabinet_seats_plot") %>%
+                               withSpinner(color = "#2076B6")
+                    )
                     
                 ),
                   

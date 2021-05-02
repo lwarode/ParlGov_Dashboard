@@ -76,7 +76,7 @@ if (last_changed < custom_date | is.infinite(last_changed)) {
 # Add data to environment
 party_main <- read_csv(here::here("Data", "view_party.csv"), locale = locale(encoding = "Latin1"))
 election_main <- read_csv(here::here("Data", "view_election.csv"), locale = locale(encoding = "Latin1"))
-cab_main <- read_csv(here::here("Data", "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
+cabinet_main <- read_csv(here::here("Data", "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
 
 # Country Search UI Input
 country_list <- election_main %>% 
@@ -85,7 +85,6 @@ country_list <- election_main %>%
   arrange(country_both) %>% 
   add_row(country_both = "All", .before = 1) %>% 
   pull(country_both)
-
 
 
 # Party -------------------------------------------------------------------
@@ -120,8 +119,6 @@ names(elec_type) <- c("All Elections",
                       "EP Elections")
 
 
-
-
 # Election ----------------------------------------------------------------
 # Election Search UI Input
 election_list <- election_main %>% 
@@ -134,6 +131,20 @@ election_list <- election_main %>%
   arrange(desc(election_date)) %>% 
   pull(election_date_both)
 
+
+# Cabinet -----------------------------------------------------------------
+# Cabinet Search UI Input
+cabinet_list <- cabinet_main %>% 
+  mutate(cabinet_name_year = paste0(cabinet_name,
+                                    " (",
+                                    lubridate::year(election_date),
+                                    ")")) %>% 
+  arrange(desc(election_date)) %>%
+  distinct(cabinet_name_year) %>% 
+  pull(cabinet_name_year)
+  
+
+# Color (Party/All) -------------------------------------------------------
 # Party Color (All)
 pg_party_color_raw <- read.csv(here::here("pg_party_color.csv"))
 
@@ -147,10 +158,12 @@ pg_party_color <- pg_party_color_raw %>%
   mutate(color = case_when(
     # CDU
     party_id == 808 ~ color_2,
-    # N-VA
-    party_id == 501 ~ color_2,
     # DIE LINKE
     party_id == 791 ~ color_2,
+    # N-VA
+    party_id == 501 ~ color_2,
+    # VB
+    party_id == 993 ~ "#F2BD2E",
     TRUE ~ color_1
   )) %>% 
   right_join(party_main) %>% 

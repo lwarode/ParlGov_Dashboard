@@ -4,8 +4,7 @@ library(shinyWidgets)
 library(shinycssloaders)
 library(shinyjs)
 
-source(here::here("App/global.R"))
-
+# source(here::here("App/global.R"))
 
 # custom download buttons (varying icons) ---------------------------------
 plotDownloadButton <- function(outputId, label = "Download"){
@@ -22,7 +21,7 @@ excelDownloadButton <- function(outputId, label = "Download"){
 dashboardPage(
  
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
-                                  tags$img(src = "http://www.parlgov.org/static/images/parlgov-logo.svg",
+                                  tags$img(src = "pg_logo.svg",
                                            title = "ParlGov Webpage")),
                     
                     # Link to GitHub Repository

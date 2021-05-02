@@ -1032,7 +1032,7 @@ function(input, output, session) {
     
     cabinet_lr_arranged <- cabinet_df() %>% 
       group_by(cabinet_id) %>% 
-      mutate(seat_share = seats / election_seats_total * 100,
+      mutate(seat_share = seats / election_seats_total,
              seat_share_label = (seat_share * 100) %>% round(1) %>% as.character() %>% paste0("%")) %>% 
       filter(seats > 0) %>% 
       arrange(left_right) %>% 
@@ -1040,7 +1040,7 @@ function(input, output, session) {
              # seat_share = seats / seats_total * 100,
              # seat_share_label = seat_share %>% round(1) %>% as.character() %>% paste0("%"),
              cum_seats_position = case_when(
-               cum_seats == min(cum_seats) ~ cum_seats / 2,
+               cum_seats == min(cum_seats, na.rm = TRUE) ~ cum_seats / 2,
                TRUE ~ lag(cum_seats) + (seat_share / 2)
              ),
              full_label = paste0(seats, " Seats", " (", seat_share_label, ")"))
@@ -1061,9 +1061,9 @@ function(input, output, session) {
       scale_fill_manual("Party", values = cabinet_color()) +
       scale_x_continuous(labels = scales::percent_format(1), breaks = seq(0, 1, 0.1), limits = c(0, 1)) +
       theme_pg() +
-      theme(legend.position = "none") + 
-      labs(x = "Seat Share",
-           y = "")
+      theme(legend.position = "none",
+            axis.title.y = element_blank()) + 
+      labs(x = "Seat Share")
     
     return(cabinet_seats_share)
     

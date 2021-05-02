@@ -40,38 +40,38 @@ if (! "pg_logo.svg" %in% list.files(here::here("App"))) {
 # Data Section ------------------------------------------------------------
 
 # Create "Data subfolder" if not existing
-if (! dir.exists(here::here("App/Data"))) {
-
-  dir.create(here::here("App/Data"))
-
-}
-
-# custom date for update requirement
-custom_date <- Sys.time() - 60 * 60 * 24 * 30 # 30 days prior Sys.time()
-
-# date of last change
-last_changed <-
-  fs::dir_info(path = here::here("App/Data"), regexp = "view") %>%
-  pull(modification_time) %>%
-  min()
-
-# (Re-)load data if csv is older than custom date or is not existent
-if (last_changed < custom_date | is.infinite(last_changed)) {
-
-  # file prefix
-  file_prefix <- "view"
-  
-  # URL of data
-  pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
-  
-  # Download ParlGov main ("view_") data
-  map(c("party", "election", "cabinet"), 
-      ~ download.file(paste0(pg_url, file_prefix, "_", .x, ".csv"), 
-                      here::here("App/Data", paste0(file_prefix, "_", .x, ".csv")))
-  )
-  
-    
-}
+# if (! dir.exists(here::here("App/Data"))) {
+# 
+#   dir.create(here::here("App/Data"))
+# 
+# }
+# 
+# # custom date for update requirement
+# custom_date <- Sys.time() - 60 * 60 * 24 * 30 # 30 days prior Sys.time()
+# 
+# # date of last change
+# last_changed <-
+#   fs::dir_info(path = here::here("App/Data"), regexp = "view") %>%
+#   pull(modification_time) %>%
+#   min()
+# 
+# # (Re-)load data if csv is older than custom date or is not existent
+# if (last_changed < custom_date | is.infinite(last_changed)) {
+# 
+#   # file prefix
+#   file_prefix <- "view"
+#   
+#   # URL of data
+#   pg_url <- "http://www.parlgov.org/static/data/experimental-cp1252/"
+#   
+#   # Download ParlGov main ("view_") data
+#   map(c("party", "election", "cabinet"), 
+#       ~ download.file(paste0(pg_url, file_prefix, "_", .x, ".csv"), 
+#                       here::here("App/Data", paste0(file_prefix, "_", .x, ".csv")))
+#   )
+#   
+#     
+# }
 
 # Add data to environment
 party_main <- read_csv(here::here("App/Data", "view_party.csv"), locale = locale(encoding = "Latin1"))

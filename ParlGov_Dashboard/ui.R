@@ -399,6 +399,12 @@ dashboardPage(
         # Color properties
         tags$head(tags$style(HTML('
         
+                                .shiny-output-error-validation {
+                                text-align: center;
+                                font-weight: bold;
+                                font-size: 22px;
+                                }
+        
                                 /* button center alignment */
                                 .btn { vertical-align: middle; width: 84%;}
                                 

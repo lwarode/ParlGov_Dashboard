@@ -176,6 +176,10 @@ function(input, output, session) {
   
   output$party_lr_plot <- renderPlot({
     
+    validate(
+      need(input$party_search, "\n\n\n\nSelect at least 1 Party")
+    )
+    
     party_lr()
     
   })
@@ -302,6 +306,10 @@ function(input, output, session) {
   })
   
   output$party_vs_plot <- renderPlot({
+    
+    validate(
+      need(input$party_search, "\n\n\n\nSelect at least 1 Party")
+    )
     
     party_vs()
     
@@ -550,6 +558,10 @@ function(input, output, session) {
   
   output$election_votes_plot <- renderPlot({
     
+    validate(
+      need(input$election_search, "\n\n\n\nSelect at least 1 Election")
+    )
+    
     election_votes()
     
   })
@@ -652,7 +664,9 @@ function(input, output, session) {
   
   output$election_seats_plot <- renderPlot({
     
-    # validate(need(input$election_search, paste0("Select Election")))
+    validate(
+      need(input$election_search, "\n\n\n\nSelect at least 1 Election")
+    )
     
     election_seats()
     
@@ -1022,6 +1036,10 @@ function(input, output, session) {
 
   output$cabinet_lr_plot <- renderPlot({
 
+    validate(
+      need(input$cabinet_search, "\n\n\n\nSelect at least 1 Cabinet")
+    )
+    
     cabinet_lr()
 
   })
@@ -1071,6 +1089,10 @@ function(input, output, session) {
   
   
   output$cabinet_seats_plot <- renderPlot({
+    
+    validate(
+      need(input$cabinet_search, "\n\n\n\nSelect at least 1 Cabinet")
+    )
     
     cabinet_seats()
     

@@ -19,6 +19,9 @@ excelDownloadButton <- function(outputId, label = "Download"){
 
 
 dashboardPage(
+  
+  # Website Title
+  title = "ParlGov Dashboard",
  
     dashboardHeader(title = tags$a(href = "http://www.parlgov.org/",
                                   tags$img(src = "pg_logo.svg",

@@ -962,7 +962,7 @@ function(input, output, session) {
   output$cabinet_term <- renderInfoBox({
     
     infoBox(
-      "Cabinet Status", 
+      "Cabinet Term", 
       value = tags$p(cabinet_term(), style = "font-size: 50%;"), 
       icon = icon("calendar"), 
       color = "blue"

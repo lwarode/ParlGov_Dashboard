@@ -247,10 +247,9 @@ function(input, output, session) {
     
     elec_party_df() %>% 
         group_by(party_id) %>% 
-        mutate(max_vs = max(vote_share, na.rm = TRUE)) %>% 
-        distinct(max_vs, party_name_short, .keep_all = TRUE) %>% 
+        filter(vote_share == max(vote_share, na.rm = TRUE)) %>% 
         ungroup %>% 
-        mutate(max_vs_party = paste0(max_vs, "%", " | ", party_name_short, " (", election_year, ")")) %>% 
+        mutate(max_vs_party = paste0(vote_share, "%", " | ", party_name_short, " (", election_year, ")")) %>% 
         pull(max_vs_party) %>% 
         toString()
     

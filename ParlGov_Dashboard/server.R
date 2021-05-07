@@ -555,12 +555,12 @@ function(input, output, session) {
     }
         
     election_df() %>% 
-      mutate(vote_share_label = paste0(vote_share, "%")) %>% 
+      mutate(vote_share_label = paste0(vote_share %>% round(1), "%")) %>% 
       ggplot(
            aes(x = fct_reorder(party_name_short, - vote_share), 
                y = vote_share)) +
       geom_col(aes(fill = party_name_short)) +
-      geom_text(aes(label = vote_share_label), nudge_y = 1) +
+      geom_text(aes(label = vote_share_label), nudge_y = 1, size = 3) +
       theme_pg() +
       theme(legend.position = "none") +
       scale_y_continuous(labels = scales::percent_format(scale = 1)) +

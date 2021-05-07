@@ -336,26 +336,42 @@ function(input, output, session) {
 
   # Party Downloads ---------------------------------------------------------
   # Plot L-R
+  party_lr_pg <- reactive({
+    
+    party_lr() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
+  
   output$party_lr_download <- downloadHandler(
     
     filename = "plot_party_lr.png",
     
     content = function(file) {
       
-      ggsave(party_lr(), filename = file, device = "png", width = 8, height = 8)
+      ggsave(party_lr_pg(), filename = file, device = "png", width = 8, height = 8)
       
     }
     
   )
   
   # Plot Vote Share
+  party_vs_pg <- reactive({
+    
+    party_vs() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
+  
   output$party_vs_download <- downloadHandler(
     
     filename = "plot_party_vs.png",
     
     content = function(file) {
       
-      ggsave(party_vs(), filename = file, device = "png", width = 10, height = 5)
+      ggsave(party_vs_pg(), filename = file, device = "png", width = 10, height = 5)
       
     }
     
@@ -685,17 +701,35 @@ function(input, output, session) {
   
 
   # Election Downloads ------------------------------------------------------
+  # Election Votes
+  election_votes_pg <- reactive({
+    
+    election_votes() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
+  
   output$election_votes_download <- downloadHandler(
     
     filename = "plot_election_votes.png",
     
     content = function(file) {
       
-      ggsave(election_votes(), filename = file, device = "png", width = 8, height = 5)
+      ggsave(election_votes_pg(), filename = file, device = "png", width = 8, height = 5)
       
     }
     
   )
+  
+  # Election Seats
+  election_seats_pg <- reactive({
+    
+    election_seats() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
   
   output$election_seats_download <- downloadHandler(
     
@@ -703,7 +737,7 @@ function(input, output, session) {
     
     content = function(file) {
       
-      ggsave(election_seats(), filename = file, device = "png", width = 10, height = 6)
+      ggsave(election_seats_pg(), filename = file, device = "png", width = 10, height = 6)
       
     }
     
@@ -1117,17 +1151,35 @@ function(input, output, session) {
   
   
   # Cabinet Downloads -------------------------------------------------------
+  # Cabinet L-R
+  cabinet_lr_pg <- reactive({
+    
+    cabinet_lr() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
+  
   output$cabinet_lr_download <- downloadHandler(
     
     filename = "plot_cabinet_lr.png",
     
     content = function(file) {
       
-      ggsave(cabinet_lr(), filename = file, device = "png", width = 8, height = 8)
+      ggsave(cabinet_lr_pg(), filename = file, device = "png", width = 8, height = 8)
       
     }
     
   )
+  
+  # Cabinet Seats
+  cabinet_seats_pg <- reactive({
+    
+    cabinet_seats() +
+      labs(caption = "Data obtained from: parlgov.org (Döring and Manow). 
+           \nParlGov Dashboard is a project from Lukas Warode.")
+    
+  })
   
   output$cabinet_seats_download <- downloadHandler(
     
@@ -1135,7 +1187,7 @@ function(input, output, session) {
     
     content = function(file) {
       
-      ggsave(cabinet_seats(), filename = file, device = "png", width = 10, height = 6)
+      ggsave(cabinet_seats_pg(), filename = file, device = "png", width = 10, height = 6)
       
     }
     

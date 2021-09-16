@@ -87,7 +87,7 @@ election_main <- read_csv("https://parlgov.org/data/parlgov-development_csv-utf-
 # cabinet_main <- read_csv(here::here("App/Data", "view_cabinet.csv"), locale = locale(encoding = "Latin1"))
 # cabinet_main <- read_csv("http://www.parlgov.org/static/data/experimental-cp1252/view_cabinet.csv", 
 #                        locale = locale(encoding = "Latin1"))
-cabinet_main <- read_csv("https://parlgov.org/data/parlgov-development_csv-utf-8/view_election.csv", 
+cabinet_main <- read_csv("https://parlgov.org/data/parlgov-development_csv-utf-8/view_cabinet.csv", 
                          locale = locale(encoding = "utf-8"))
 
 # Country Search UI Input

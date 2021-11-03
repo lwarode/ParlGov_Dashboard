@@ -1253,6 +1253,7 @@ function(input, output, session) {
   cabinet_cabinet_chr <- reactive({
     
     cabinet_df() %>% 
+      distinct(cabinet_name_year) %>% 
       pull(cabinet_name_year) %>% 
       toString() %>% 
       stringr::str_replace_all(", ", "_") 

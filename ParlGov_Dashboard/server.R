@@ -1,5 +1,6 @@
 library(shiny)
-library(shinydashboard) # library(bs4Dash)
+library(shinydashboard)
+# library(bs4Dash)
 library(shinyjs)
 library(tidyverse)
 library(ggparliament)
@@ -1252,7 +1253,7 @@ function(input, output, session) {
   cabinet_cabinet_chr <- reactive({
     
     cabinet_df() %>% 
-      pull(cabinet_name_short) %>% 
+      pull(cabinet_name_year) %>% 
       toString() %>% 
       stringr::str_replace_all(", ", "_") 
     
